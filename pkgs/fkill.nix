@@ -13,19 +13,19 @@ pkgs.stdenv.mkDerivation rec {
   configurePhase = ''
     export HOME=$TMPDIR/home
     mkdir -p $HOME
-    cp -r $src $PWD/package.tgz
+    cp $src package.tgz
     tar -xzf package.tgz --strip-components=1
   '';
 
   buildPhase = ''
     bun install --production --no-save
-    mkdir -p $out/bin $out/lib/node_modules
+    mkdir -p $out/bin
     cp cli.js $out/bin/fkill
-    cp -r node_modules/* $out/lib/node_modules/
+    cp -r node_modules $out/bin/node_modules
   '';
 
   installPhase = "true";
 
   outputHashMode = "recursive";
-  outputHash = "sha256-jhjuPqXff48Ygj3K38pEIqTHf3HX+oTiBsWo2i8OKzE=";
+  outputHash = "sha256-P5KsB3E05PBImB9SVI1wBmMhyUdObIntud/zefhapfI=";
 }
