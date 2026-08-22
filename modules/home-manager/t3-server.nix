@@ -70,6 +70,25 @@ let
       ''}
 
       ${lib.optionalString cfg.tailscale.serve ''
+        # `tailscale serve` requires our user to be the tailscale operator.
+        # That assignment typically happens in a system-level oneshot shortly
+        # after tailscaled comes up, so wait for it explicitly instead of
+        # racing it (exit 1 -> systemd retries).
+        opReady=""
+        for _ in $(seq 1 ${toString cfg.tailscale.waitTimeout}); do
+          if ${lib.getExe pkgs.tailscale} debug prefs 2>/dev/null | grep -q '"OperatorUser": "${config.home.username}"'; then
+            opReady=1
+            break
+          fi
+          sleep 1
+        done
+
+        if [[ -z "$opReady" ]]; then
+          echo "t3-server: ${config.home.username} is not the tailscale operator after ${toString cfg.tailscale.waitTimeout}s." >&2
+          echo "t3-server: run 'sudo tailscale set --operator ${config.home.username}' or add a NixOS oneshot that does." >&2
+          exit 1
+        fi
+
         tailscaleArgs+=(--tailscale-serve)
         ${lib.optionalString (
           cfg.tailscale.servePort != null
