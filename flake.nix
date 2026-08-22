@@ -32,6 +32,11 @@
       bun-baseline = import ./pkgs/bun-baseline.nix;
     };
 
+    homeManagerModules = {
+      default = import ./modules/home-manager/t3-server.nix;
+      t3-server = import ./modules/home-manager/t3-server.nix;
+    };
+
     packages = forAllSystems (system: let
       pkgs = import nixpkgs {
         inherit system;
