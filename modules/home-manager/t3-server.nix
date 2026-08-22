@@ -35,7 +35,11 @@ let
   tailscaleEnabled = cfg.tailscale.enable;
 
   servicePath = lib.makeBinPath (
-    [ pkgs.coreutils ] ++ lib.optionals tailscaleEnabled [ pkgs.tailscale ]
+    [
+      pkgs.coreutils
+      pkgs.gnugrep
+    ]
+    ++ lib.optionals tailscaleEnabled [ pkgs.tailscale ]
   );
 
   startScript = pkgs.writeShellScript "t3-server-start" ''
