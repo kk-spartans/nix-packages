@@ -5,8 +5,8 @@ pkgs.stdenv.mkDerivation {
   src = pkgs.fetchFromGitHub {
     owner = "xCaptaiN09";
     repo = "pixie-sddm";
-    rev = "main";
-    hash = "sha256-1PDWX8bJfc0HYMW9MsxWwDXDoYy5aaehUWr7FW3yR9U=";
+    rev = "505b32c629b9183de70cc45f424e79bffe22e379";
+    hash = "sha256-YCYnPGxm6LWpkbm8kE21QEGheIOHbk1XE5ke08NM05k=";
   };
 
   installPhase = ''
