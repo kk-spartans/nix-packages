@@ -12,7 +12,7 @@ pkgs.rustPlatform.buildRustPackage rec {
 
   doCheck = false;
 
-  buildInputs = with pkgs; [ openssl sqlite ] ++ lib.optionals stdenv.isDarwin [ libiconv ];
+  buildInputs = with pkgs; [ openssl sqlite ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
   nativeBuildInputs = with pkgs; [ perl ];
 
