@@ -225,7 +225,9 @@ in
         ExecStart = "${startScript}";
         Restart = "on-failure";
         RestartSec = "5s";
-        Environment = [ "PATH=${servicePath}" ];
+        # Inherit user's full PATH so tools from nix-profile / home.packages (spogo etc.) are visible.
+        # systemd user services don't inherit the login shell PATH, so we explicitly add the usual profile dirs.
+        Environment = [ "PATH=${servicePath}:${config.home.homeDirectory}/.nix-profile/bin:${config.home.homeDirectory}/.local/state/nix/profile/bin:/etc/profiles/per-user/${config.home.username}/bin:/run/current-system/sw/bin" ];
         # Light touch on purpose: t3 spawns interactive agent harnesses
         # (pty, git, network); aggressive namespacing breaks them.
       };
