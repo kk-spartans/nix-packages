@@ -27,6 +27,8 @@
         agent-browser-bin = import ./pkgs/agent-browser-bin.nix { pkgs = final; };
         pixie-sddm = import ./pkgs/pixie-sddm.nix { pkgs = final; };
         aw-watcher-lastfm = import ./pkgs/aw-watcher-lastfm.nix { pkgs = final; };
+        t3-nightly-unwrapped = final.callPackage ./pkgs/t3-nightly-unwrapped.nix { };
+        t3-nightly = final.callPackage ./pkgs/t3-nightly.nix { };
       };
 
       bun-baseline = import ./pkgs/bun-baseline.nix;
@@ -46,7 +48,8 @@
     in {
       inherit (pkgs)
         spogo fkill tokscale wacli discrawl gogcli hf ocrmypdf
-        agent-browser-bin pixie-sddm aw-watcher-lastfm;
+        agent-browser-bin pixie-sddm aw-watcher-lastfm
+        t3-nightly t3-nightly-unwrapped;
     });
   };
 }
