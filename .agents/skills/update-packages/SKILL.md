@@ -1,6 +1,6 @@
 ---
 name: update-packages
-description: Update all custom nix-packages to latest versions. Handles Go (vendorHash), Rust (cargoHash), npm (npmDepsHash), Python uv FOD (outputHash), fetchurl/fetchzip, and t3-nightly (npm nightly) with harness wrappers. Use when bumping versions, refreshing hashes, or syncing t3-lock.
+description: Update all custom nix-packages to latest versions. Edit when user asks to add a new package, always keep this skill updated with the current repo state.
 ---
 
 # Update nix-packages
