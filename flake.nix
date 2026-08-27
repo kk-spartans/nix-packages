@@ -37,6 +37,7 @@
     homeManagerModules = {
       default = import ./modules/home-manager/t3-server.nix;
       t3-server = import ./modules/home-manager/t3-server.nix;
+      wacli-sync = import ./modules/home-manager/wacli-sync.nix;
     };
 
     packages = forAllSystems (system: let
