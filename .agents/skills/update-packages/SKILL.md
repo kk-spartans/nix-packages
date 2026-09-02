@@ -5,11 +5,39 @@ description: Update all custom nix-packages to latest versions. Edit when user a
 
 # Update nix-packages
 
-This skill updates every package in `pkgs/` to its latest upstream version. The repo uses `github:nixos/nixpkgs?ref=master` as base; overlays and packages are exposed via `flake.nix:overlays.default` and `flake.nix:packages`.
+This skill updates **every** package in `pkgs/` to its latest upstream version — not just the ones listed here. When a new package is added (e.g. `terminal-browser`), infer its update method from its builder/source rather than waiting for this doc to mention it.
+
+The repo uses `github:nixos/nixpkgs?ref=master` as base; overlays and packages are exposed via `flake.nix:overlays.default` and `flake.nix:packages`.
+
+## 0. Discover — do this first, every time
+
+Don't trust the package list below as exhaustive. Enumerate what's actually on disk:
+
+```bash
+ls -1 pkgs/*.nix
+cat flake.nix
+# for each pkgs/<name>.nix: note builder, fetcher, and version source
+grep -l "buildGoModule\|buildRustPackage\|buildNpmPackage\|mkDerivation\|fetchFromGitHub\|fetchurl\|fetchzip" pkgs/*.nix
+```
+
+For each file, read it fully and classify:
+
+| Signals in the .nix | Type | How to find latest | What to bump |
+|---|---|---|---|
+| `buildGoModule` + `fetchFromGitHub` `rev` | Go | `gh api repos/<owner>/<repo>/commits --jq '.[0].sha'` or tags | `rev`, `hash`, `vendorHash` |
+| `buildGoModule` + `go.overrideAttrs` | Go with pinned toolchain | same + `https://go.dev/dl/?mode=json` | above + `go` `version`/`hash` |
+| `rustPlatform.buildRustPackage` + `fetchurl` | Rust | `curl -s https://api.github.com/repos/<owner>/<repo>/tags \| jq -r '.[0].name'` | `version`, `hash`, `cargoHash` |
+| `stdenv.mkDerivation` + `fetchurl` + `outputHashMode = "recursive"` | FOD tarball (npm/bun) | `npm view <pkg> version` | `version`, `hash`, `outputHash` |
+| `stdenv.mkDerivation` + `uv pip install` + `outputHashMode` | Python uv FOD | `curl -s https://pypi.org/pypi/<name>/json \| jq -r '.info.version'` | `version`, `outputHash`, and the `uv pip install <name>==<version>` line |
+| `stdenv*mkDerivation` + `fetchFromGitHub`/`fetchzip` (no FOD) | Plain fetch | `gh api repos/<owner>/<repo>/commits` or `/releases/latest` | `rev`/`version`, `hash` |
+| `buildNpmPackage` + `src = ../t3-lock` | npm lockfile package | `npm view <pkg> dist-tags --json` | `version`, `npmDepsHash`, plus `t3-lock/package.json` + lockfile |
+| `final: prev:` overlay | Nixpkgs overlay (e.g. `bun-baseline`) | `nix eval github:nixos/nixpkgs/master#<attr>.version --raw` + upstream release | `hash` (version is inherited) |
+| `symlinkJoin` wrapper | Wrapper | inherits from unwrapped | only if harness/wrapper logic changes |
+| `stdenv.mkDerivation` + binary `fetchurl` + `autoPatchelfHook` | Binary tarball (e.g. `terminal-browser` from `zenbu-labs/terminal-browser`) | `gh api repos/zenbu-labs/terminal-browser/releases --jq '.[0].tag_name'` or `gh release view --repo zenbu-labs/terminal-browser` | `version`, `hash` per-platform |
+
+If a package doesn't match any row, read its `src` fetcher and builder and apply the **General hash workflow** below — that covers any future package.
 
 ## Quick inventory (read before updating)
-
-Run these first to see current state:
 
 ```bash
 ls pkgs/*.nix
@@ -18,7 +46,7 @@ cat pkgs/t3-nightly-unwrapped.nix  # buildNpmPackage + t3-lock
 cat t3-lock/package.json
 ```
 
-Package types:
+Known package types (non-exhaustive — see discovery table above):
 
 | File | Builder | Source | Hashes to update |
 |------|---------|--------|------------------|
@@ -28,6 +56,7 @@ Package types:
 | `fkill.nix` | `stdenv.mkDerivation` FOD | `fetchurl` npm tarball | `hash` (src), `outputHash` (recursive) |
 | `hf.nix`, `ocrmypdf.nix` | `stdenv.mkDerivation` FOD (`uv`) | `uv pip install` | `version`, `outputHash` (update `uv pip install` line too) |
 | `pixie-sddm.nix`, `aw-watcher-lastfm.nix` | `stdenv{NoCC}.mkDerivation` | `fetchFromGitHub`/`fetchzip` | `rev`/`hash` |
+| `terminal-browser.nix` | `stdenv.mkDerivation` + `autoPatchelfHook` | `fetchurl` per-arch tarball from `github:zenbu-labs/terminal-browser` releases | `version`, `hash` per-arch |
 | `t3-nightly-unwrapped.nix` | `buildNpmPackage` | `../t3-lock` (npm) | `version`, `npmDepsHash`, plus `t3-lock` files |
 | `bun-baseline.nix` | overlay `final: prev:` | `fetchurl` bun baseline zip | `hash` (src), `version` is inherited from `prev.bun.version` – only hash usually needs update |
 | `t3-nightly.nix` | `symlinkJoin` wrapper | `t3-nightly-unwrapped` | no independent version – inherits from unwrapped; only update if harness list changes |
@@ -50,9 +79,19 @@ nix store prefetch-file --json https://github.com/<owner>/<repo>/archive/<tag>.t
 nix-prefetch-url --unpack https://github.com/<owner>/<repo>/archive/<tag>.tar.gz  # gives SRI for fetchzip/fetchFromGitHub (convert with `nix hash convert`)
 ```
 
+For per-arch binary tarballs (like `terminal-browser` from `zenbu-labs/terminal-browser`):
+
+```bash
+# github releases — also where the SRI digest is shown in gh api output
+gh api repos/zenbu-labs/terminal-browser/releases/tags/v<version> --jq '.assets[] | "\(.name) \(.browser_download_url) \(.digest)"'
+nix store prefetch-file --json https://github.com/zenbu-labs/terminal-browser/releases/download/v<version>/terminal-browser-linux-x64.tar.gz
+nix store prefetch-file --json https://github.com/zenbu-labs/terminal-browser/releases/download/v<version>/terminal-browser-linux-arm64.tar.gz
+# or: gh release view v<version> --repo zenbu-labs/terminal-browser --json assets --jq '.assets[] | .url'
+```
+
 ## Per-package update steps
 
-### 1. Go (`spogo`, `wacli`, `gogcli`, `discrawl`)
+### 1. Go (`spogo`, `wacli`, `gogcli`, `discrawl` — and any future Go package)
 
 ```bash
 # get latest commit/tag
@@ -71,7 +110,7 @@ nix build .#spogo --no-link && echo ok
 
 `discrawl.nix` additionally pins `go_1_26_4` – check `https://go.dev/dl/` for latest, update `version` and `hash` inside the `go.overrideAttrs` block if bumping Go.
 
-### 2. Rust (`tokscale`, `agent-browser-bin`)
+### 2. Rust (`tokscale`, `agent-browser-bin` — and any future Rust package)
 
 ```bash
 # latest tag
@@ -86,7 +125,7 @@ curl -s https://api.github.com/repos/junhoyeo/tokscale/tags | jq -r '.[0].name'
 nix build .#tokscale --no-link 2>&1 | tail -n 20
 ```
 
-### 3. npm tarball FOD (`fkill`)
+### 3. npm tarball FOD (`fkill` — and any similar FOD)
 
 ```bash
 npm view fkill-cli version   # or `npm view fkill-cli dist-tags`
@@ -96,13 +135,13 @@ nix build .#fkill --no-link 2>&1 | tail -n 20  # first gives outputHash got:
 
 The `fkill.nix` uses `outputHashMode = "recursive"` with `bun install` + `outputHash`. Set `outputHash = lib.fakeHash` equivalent placeholder `sha256-AAAAAAAA...`, build to get real.
 
-### 4. Python uv FOD (`hf`, `ocrmypdf`)
+### 4. Python uv FOD (`hf`, `ocrmypdf` — and any future uv FOD)
 
 ```bash
 # check pypi
 curl -s https://pypi.org/pypi/huggingface-hub/json | jq -r '.info.version'
 # update pkgs/hf.nix: version, and the `uv pip install huggingface-hub==<version>` line, and outputHash
-# same for ocrmypdf (currently outputHash is placeholder `FOOtTBB...` – replace after build)
+# same for ocrmypdf
 
 nix build .#hf --no-link 2>&1 | tail -n 20
 # fix outputHash, rebuild
@@ -110,7 +149,7 @@ nix build .#hf --no-link 2>&1 | tail -n 20
 
 These are FODs (`dontUnpack = true`, `outputHashMode = "recursive"`). They vendor via `uv` at build time – network allowed because `outputHash` is set.
 
-### 5. fetchFromGitHub / fetchzip (`pixie-sddm`, `aw-watcher-lastfm`)
+### 5. fetchFromGitHub / fetchzip (`pixie-sddm`, `aw-watcher-lastfm` — and any plain fetch)
 
 ```bash
 gh api repos/xCaptaiN09/pixie-sddm/commits --jq '.[0].sha'
@@ -119,7 +158,23 @@ nix build .#pixie-sddm --no-link
 # similarly for aw-watcher-lastfm: check https://github.com/0xbrayo/aw-watcher-lastfm/releases/latest
 ```
 
-### 6. `t3-nightly` (npm nightly, the most involved)
+### 6. Binary tarball (`terminal-browser` — and any future binary package)
+
+```bash
+# terminal-browser lives at github:zenbu-labs/terminal-browser — use gh cli
+gh api repos/zenbu-labs/terminal-browser/releases --jq '.[0].tag_name'  # e.g. v0.7.6
+gh api repos/zenbu-labs/terminal-browser/releases/tags/v0.7.6 --jq '.assets[] | "\(.name) \(.digest)"'
+# or: gh release view --repo zenbu-labs/terminal-browser v0.7.6 --json tagName,assets
+
+# prefetch both arches (github release URLs):
+nix store prefetch-file --json https://github.com/zenbu-labs/terminal-browser/releases/download/v<version>/terminal-browser-linux-x64.tar.gz
+nix store prefetch-file --json https://github.com/zenbu-labs/terminal-browser/releases/download/v<version>/terminal-browser-linux-arm64.tar.gz
+# update pkgs/terminal-browser.nix version + both srcHash branches
+nix build .#terminal-browser --no-link 2>&1 | tail -n 20
+# for other binary tarballs, adapt: use gh api for github releases, or curl -I probe for direct dl hosts
+```
+
+### 7. `t3-nightly` (npm nightly, the most involved)
 
 Current version pinned in `pkgs/t3-nightly-unwrapped.nix:version` and `t3-lock/package.json`. Steps:
 
@@ -151,7 +206,7 @@ nix build .#t3-nightly --no-link
 
 `pkgs/t3-nightly.nix` rarely needs version change – it inherits from unwrapped. Only update if harness list changes (new `enable*` flags).
 
-### 7. `bun-baseline` overlay
+### 8. `bun-baseline` overlay
 
 ```bash
 # check nixpkgs bun version
@@ -174,6 +229,8 @@ nix build .#<pkg> --no-link   # sanity
 
 `flake.nix` only needs editing when adding/removing a package (add to `overlays.default` and `packages` set). Otherwise just bump the file.
 
+For packages gated on `lib.optionalAttrs stdenv.isLinux` (like `terminal-browser`), add them in both `overlays.default` and `packages` inside the `// optionalAttrs isLinux` branch.
+
 ## Commit / push
 
 ```bash
@@ -189,8 +246,8 @@ git push origin main
 - Go `vendorHash` changes on any dep bump – always refresh after `rev` change.
 - Rust `cargoHash` changes on `Cargo.lock` change.
 - `t3-lock` must be committed – `buildNpmPackage` uses `src = ../t3-lock`; if lockfile is stale, `npmDepsHash` will mismatch.
-- `ocrmypdf` currently has placeholder outputHash `FOOtTBB...` – needs real hash after next build.
 - For `nixpkgs` master, `isLinux`/`isDarwin` deprecations warn – prefer `stdenv.hostPlatform.isLinux`.
+- When a new package is added, update this skill's "Known package types" table and the discovery table if it introduces a new builder/fetcher pattern.
 
 ## Verify latest nightly (as of skill write)
 
