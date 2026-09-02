@@ -1,17 +1,17 @@
 { pkgs }:
-pkgs.buildGoModule {
+(pkgs.buildGoModule.override { go = pkgs.go_1_27; }) {
   pname = "wacli";
   version = "unstable";
 
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "wacli";
-    rev = "97e14efdf91a7c9de1b68845321eb6355943b5f5";
-    hash = "sha256-i7hZxLQkde4fzoFS7977gLFxoCsAVnmgdyqtBITHTxM=";
+    rev = "954102654b3a8f7adbb0a75085ba257adcd7e534";
+    hash = "sha256-+R8wS+qGTLmYyXU5ibm3I2VKH//ZDR3OEcUYqbYndRM=";
   };
 
   subPackages = [ "cmd/wacli" ];
-  vendorHash = "sha256-Ymm/hn1xvMA9MnAtSQxMWoPDx5qNFv9bHR9D6031upI=";
+  vendorHash = "sha256-ivxjc+sEbNmNNQ/oudZhje2ZFAathWqeLDKDx/tNwas=";
 
   nativeBuildInputs = [ pkgs.installShellFiles ];
 

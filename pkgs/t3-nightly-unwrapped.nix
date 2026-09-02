@@ -6,11 +6,11 @@
 }:
 buildNpmPackage {
   pname = "t3-nightly-unwrapped";
-  version = "0.0.34-nightly.20260825.1185";
+  version = "0.0.39-nightly.20260902.1257";
 
   src = ../t3-lock;
 
-  npmDepsHash = "sha256-Rf3uQHZJaX8ONIb6sbE4qkjGpS/Au1RjUAToGvn0UWo=";
+  npmDepsHash = "sha256-YfMSQW2C8flO3hUYQs28e2sVA0ZFv1cYiquf4yVIQt0=";
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 

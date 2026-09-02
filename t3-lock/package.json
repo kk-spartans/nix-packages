@@ -2,6 +2,6 @@
   "name": "t3-lock",
   "version": "1.0.0",
   "dependencies": {
-    "t3": "0.0.34-nightly.20260825.1185"
+    "t3": "0.0.39-nightly.20260902.1257"
   }
 }

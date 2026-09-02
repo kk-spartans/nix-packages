@@ -1,20 +1,20 @@
 { pkgs }:
 let
-  version = "0.5.4";
+  version = "0.7.6";
   target =
     if pkgs.stdenv.isAarch64 then "linux-arm64"
     else "linux-x64";
   srcHash =
     if pkgs.stdenv.isAarch64
-    then "sha256-SLVSX51G/ydAEHZ3WliLxF7n4Xf0Px6IGzzT0kUc1lE="
-    else "sha256-lYswHLWoHzKtVTVn5GkZ/PMsLQ5iZlsIQ90XW4GwJJA=";
+    then "sha256-cVD6l0YNmDS/1r8eSnH25TitvH/S7Wh50EV/zMoyPUY="
+    else "sha256-vjZ+fZQsW2/jmjJxBejcPkQS2SR0riukKrBWRS7E4sQ=";
 in
 pkgs.stdenv.mkDerivation {
   pname = "terminal-browser";
   inherit version;
 
   src = pkgs.fetchurl {
-    url = "https://terminal-browser.sh/install/dl/stable/v${version}/terminal-browser-${target}.tar.gz";
+    url = "https://github.com/zenbu-labs/terminal-browser/releases/download/v${version}/terminal-browser-${target}.tar.gz";
     hash = srcHash;
   };
 

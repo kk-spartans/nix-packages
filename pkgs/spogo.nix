@@ -6,10 +6,10 @@ pkgs.buildGoModule {
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "spogo";
-    rev = "80d18f28f44a0d0777b62c1317d9855cb3ffb8a9";
-    hash = "sha256-ItC3ZK3U1e1FrSi0ildiYyWVYwTAiT7xUQrZ6GmvrKg=";
+    rev = "87a990da7e2978f16938d8c7a8b708ddb96f7d78";
+    hash = "sha256-GdvngM7i8V4A5Bi2B2d54qfPkdHUWc1C6cPK6Vgk3yA=";
   };
 
   subPackages = [ "cmd/spogo" ];
-  vendorHash = "sha256-aUMu71ZIjM+87vneKNRXuaFZCW5IB5d2jAey/1itqYM=";
+  vendorHash = "sha256-6wB/pBSXjZZaMtGrROMm87RxDzIfpdVPu6Ts+iXFxBA=";
 }

@@ -1,11 +1,11 @@
 { pkgs }:
 pkgs.stdenvNoCC.mkDerivation {
   pname = "aw-watcher-lastfm";
-  version = "0.5.1";
+  version = "0.6.0";
 
   src = pkgs.fetchzip {
-    url = "https://github.com/0xbrayo/aw-watcher-lastfm/releases/download/v0.5.1/aw-watcher-lastfm-linux.zip";
-    hash = "sha256-ODHJDjOEG956skxToUm7Wr8Lq8TTZTNCeyHaLzNrZ6c=";
+    url = "https://github.com/0xbrayo/aw-watcher-lastfm/releases/download/v0.6.0/aw-watcher-lastfm-linux.zip";
+    hash = "sha256-+n5zSHbA43p30Bi0UE0F7qT2fRCcU2TwETsDTYj1ebs=";
   };
 
   nativeBuildInputs = [ pkgs.autoPatchelfHook ];
