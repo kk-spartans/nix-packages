@@ -31,6 +31,7 @@
         t3-nightly = final.callPackage ./pkgs/t3-nightly.nix { };
       } // prev.lib.optionalAttrs prev.stdenv.isLinux {
         terminal-browser = import ./pkgs/terminal-browser.nix { pkgs = final; };
+        terminal-agent-browser = import ./pkgs/terminal-agent-browser.nix { pkgs = final; };
       };
 
       bun-baseline = import ./pkgs/bun-baseline.nix;
@@ -40,6 +41,7 @@
       default = import ./modules/home-manager/t3-server.nix;
       t3-server = import ./modules/home-manager/t3-server.nix;
       wacli-sync = import ./modules/home-manager/wacli-sync.nix;
+      terminal-agent-browser = import ./modules/home-manager/terminal-agent-browser.nix;
     };
 
     packages = forAllSystems (system: let
@@ -54,7 +56,7 @@
         agent-browser-bin pixie-sddm aw-watcher-lastfm
         t3-nightly t3-nightly-unwrapped;
     } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
-      inherit (pkgs) terminal-browser;
+      inherit (pkgs) terminal-browser terminal-agent-browser;
     });
   };
 }

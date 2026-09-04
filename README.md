@@ -24,3 +24,25 @@ services.t3-server = {
 - Pairing URL/token prints once on first start: `journalctl --user -u t3-server`. Mint more with `t3 pair`.
 - Survive logout: `sudo loginctl enable-linger <user>`.
 
+### `programs.terminal-agent-browser`
+
+Per-herdr-tab agent control for terminal-browser (`terminal-agent-browser`
+wrapper + skill). Agents and terminal-browser panes in the same herdr tab
+share one agent-browser session; different tabs are isolated. Never shadows
+your own `agent-browser` install, and never downloads Chromium (always drives
+terminal-browser's Chromium over CDP).
+
+```nix
+# flake input: nix-packages
+imports = [ inputs.nix-packages.homeManagerModules.terminal-agent-browser ];
+
+programs.terminal-agent-browser = {
+  enable = true;
+  skill.enable = true; # install ~/.agents/skills/terminal-agent-browser/SKILL.md
+};
+```
+
+- Binary: `terminal-agent-browser <agent-browser args>` (e.g. `snapshot`, `click @e1`).
+- Open pages with `terminal-browser open`, list with `terminal-browser ls`.
+- Overrides: `TERMINAL_AGENT_BROWSER_SESSION`, `TERMINAL_BROWSER_KEY`, `TERMINAL_BROWSER_CDP_PORT`.
+
