@@ -21,6 +21,7 @@
         tokscale = import ./pkgs/tokscale.nix { pkgs = final; };
         wacli = import ./pkgs/wacli.nix { pkgs = final; };
         discrawl = import ./pkgs/discrawl.nix { pkgs = final; };
+        discord-cli = import ./pkgs/discord-cli.nix { pkgs = final; };
         gogcli = import ./pkgs/gogcli.nix { pkgs = final; };
         hf = import ./pkgs/hf.nix { pkgs = final; };
         ocrmypdf = import ./pkgs/ocrmypdf.nix { pkgs = final; };
@@ -41,6 +42,7 @@
       default = import ./modules/home-manager/t3-server.nix;
       t3-server = import ./modules/home-manager/t3-server.nix;
       wacli-sync = import ./modules/home-manager/wacli-sync.nix;
+      discord-cli-sync = import ./modules/home-manager/discord-cli-sync.nix;
       terminal-agent-browser = import ./modules/home-manager/terminal-agent-browser.nix;
     };
 
@@ -52,7 +54,7 @@
       };
     in {
       inherit (pkgs)
-        spogo fkill tokscale wacli discrawl gogcli hf ocrmypdf
+        spogo fkill tokscale wacli discrawl discord-cli gogcli hf ocrmypdf
         agent-browser-bin pixie-sddm aw-watcher-lastfm
         t3-nightly t3-nightly-unwrapped;
     } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
