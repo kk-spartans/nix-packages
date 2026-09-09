@@ -55,6 +55,7 @@ Known package types (non-exhaustive — see discovery table above):
 | `tokscale.nix`, `agent-browser-bin.nix` | `rustPlatform.buildRustPackage` | `fetchurl` tarball | `hash` (src), `cargoHash` |
 | `fkill.nix` | `stdenv.mkDerivation` FOD | `fetchurl` npm tarball | `hash` (src), `outputHash` (recursive) |
 | `hf.nix`, `ocrmypdf.nix` | `stdenv.mkDerivation` FOD (`uv`) | `uv pip install` | `version`, `outputHash` (update `uv pip install` line too) |
+| `discord-cli.nix` | two-phase `uv`: deps FOD (`uv pip install --target`, `rm -rf $out/bin`) + plain launcher drv | PyPI `kabi-discord-cli` | `version`, `outputHash` of the inner `deps` FOD |
 | `pixie-sddm.nix`, `aw-watcher-lastfm.nix` | `stdenv{NoCC}.mkDerivation` | `fetchFromGitHub`/`fetchzip` | `rev`/`hash` |
 | `terminal-browser.nix` | `stdenv.mkDerivation` + `autoPatchelfHook` | `fetchurl` per-arch tarball from `github:zenbu-labs/terminal-browser` releases | `version`, `hash` per-arch |
 | `t3-nightly-unwrapped.nix` | `buildNpmPackage` | `../t3-lock` (npm) | `version`, `npmDepsHash`, plus `t3-lock` files |
@@ -243,6 +244,7 @@ git push origin main
 ## Pitfalls
 
 - FODs (`fkill`, `hf`, `ocrmypdf`, `t3-nightly-unwrapped` via `buildNpmPackage`'s `fetchNpmDeps`) must have `outputHash`/`npmDepsHash` updated via fakeHash workflow; they are allowed network at build time only because hash is fixed.
+- FOD `$out` must not contain store references (no venvs, no symlinks to `/nix/store`, no absolute shebangs/scripts) — Nix errors with "fixed-output derivations must not reference store paths", and `$out`-embedding content can never converge since the FOD output path derives from `outputHash`. `discord-cli.nix` pattern: FOD installs to `--target` with `bin/` removed, plain derivation provides the launcher.
 - Go `vendorHash` changes on any dep bump – always refresh after `rev` change.
 - Rust `cargoHash` changes on `Cargo.lock` change.
 - `t3-lock` must be committed – `buildNpmPackage` uses `src = ../t3-lock`; if lockfile is stale, `npmDepsHash` will mismatch.
