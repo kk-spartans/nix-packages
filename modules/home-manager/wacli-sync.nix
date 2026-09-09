@@ -24,7 +24,7 @@ in
     systemd.user.services.wacli-sync = {
       Unit.Description = "wacli sync --follow";
       Service = {
-        ExecStart = "${lib.getExe cfg.package} sync --follow ${lib.escapeShellArgs cfg.extraArgs}";
+        ExecStart = "${lib.getExe cfg.package} sync --follow --download-media ${lib.escapeShellArgs cfg.extraArgs}";
         Restart = "always";
         RestartSec = "10s";
       };
