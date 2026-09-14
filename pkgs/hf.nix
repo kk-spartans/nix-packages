@@ -27,4 +27,6 @@ pkgs.stdenv.mkDerivation {
 
   outputHashMode = "recursive";
   outputHash = "sha256-jrddaOxnCY8ImQ6xFmQicCucHBzp4wUvl9JXBc8+SBU=";
+
+  meta.mainProgram = "hf";
 }

@@ -12,4 +12,6 @@ pkgs.buildGoModule {
 
   subPackages = [ "cmd/spogo" ];
   vendorHash = "sha256-6wB/pBSXjZZaMtGrROMm87RxDzIfpdVPu6Ts+iXFxBA=";
+
+  meta.mainProgram = "spogo";
 }
