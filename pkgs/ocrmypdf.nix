@@ -26,4 +26,6 @@ pkgs.stdenv.mkDerivation {
 
   outputHashMode = "recursive";
   outputHash = "sha256-FOOtTBBY/x27lBgBoaUjpNG4I/OTHkAA1ydr5hWW8io=";
+
+  meta.mainProgram = "ocrmypdf";
 }

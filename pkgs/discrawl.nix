@@ -12,4 +12,6 @@
 
   subPackages = [ "cmd/discrawl" ];
   vendorHash = "sha256-2gKVsw3Ek/LmuFEvgoA2pDvTag7DINILt9yZobEMSk4=";
+
+  meta.mainProgram = "discrawl";
 }

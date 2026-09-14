@@ -19,4 +19,6 @@ pkgs.buildGoModule {
     $out/bin/gog completion fish > gog.fish
     installShellCompletion --fish --name gog.fish gog.fish
   '';
+
+  meta.mainProgram = "gog";
 }

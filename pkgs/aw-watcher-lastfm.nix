@@ -19,4 +19,6 @@ pkgs.stdenvNoCC.mkDerivation {
     install -Dm755 "$src/aw-watcher-lastfm" "$out/bin/aw-watcher-lastfm"
     runHook postInstall
   '';
+
+  meta.mainProgram = "aw-watcher-lastfm";
 }

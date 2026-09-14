@@ -14,4 +14,6 @@ pkgs.rustPlatform.buildRustPackage rec {
   doCheck = false;
 
   cargoHash = "sha256-6xphNOYi+tJvFlprY8DCVw1XzVFapqFQfeIy0w2pyCs=";
+
+  meta.mainProgram = "agent-browser";
 }

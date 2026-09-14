@@ -28,7 +28,7 @@ in
   config = lib.mkIf cfg.enable {
     assertions = [
       {
-        assertion = pkgs.stdenv.isLinux;
+        assertion = pkgs.stdenv.hostPlatform.isLinux;
         message = "programs.terminal-agent-browser is Linux-only (terminal-browser ships Linux binaries).";
       }
     ];
