@@ -46,13 +46,12 @@ let
     ++ lib.optionals enableJujutsu [ jujutsu ]
     ++ lib.optionals enableOpencode [ opencode ];
 
-  wrapperArgs =
-    lib.optionals (runtimePackages != [ ]) [
-      "--prefix"
-      "PATH"
-      ":"
-      (lib.makeBinPath runtimePackages)
-    ];
+  wrapperArgs = lib.optionals (runtimePackages != [ ]) [
+    "--prefix"
+    "PATH"
+    ":"
+    (lib.makeBinPath runtimePackages)
+  ];
 
 in
 symlinkJoin {
