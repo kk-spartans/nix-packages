@@ -1,13 +1,12 @@
 { pkgs }:
 let
-  version = "0.8.1";
-  target =
-    if pkgs.stdenv.isAarch64 then "linux-arm64"
-    else "linux-x64";
+  version = "0.11.1";
+  target = if pkgs.stdenv.hostPlatform.isAarch64 then "linux-arm64" else "linux-x64";
   srcHash =
-    if pkgs.stdenv.isAarch64
-    then "sha256-f5DZcAPu3WrGLmHIIpD/0oDy8OjyZpEfcKsPusihAv4="
-    else "sha256-NeeAidEIncT0krvX0qA9V+1VQ7Q5S0/d875Xx1t3dH4=";
+    if pkgs.stdenv.hostPlatform.isAarch64 then
+      "sha256-7zTGgzPENS5RB9W9bFz3/oQKBcmkijcIS5/GX8mGOFw="
+    else
+      "sha256-sIMnZVqjGQJgzzSAcpS+fHxmhaomOaOTBVt8ZJ7rOko=";
 in
 pkgs.stdenv.mkDerivation {
   pname = "terminal-browser";
@@ -70,7 +69,10 @@ pkgs.stdenv.mkDerivation {
     homepage = "https://terminal-browser.sh/";
     license = licenses.mit;
     mainProgram = "terminal-browser";
-    platforms = [ "x86_64-linux" "aarch64-linux" ];
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
     sourceProvenance = [ sourceTypes.binaryNativeCode ];
   };
 }

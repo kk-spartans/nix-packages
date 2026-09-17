@@ -9,7 +9,11 @@ pkgs.stdenvNoCC.mkDerivation {
   };
 
   nativeBuildInputs = [ pkgs.autoPatchelfHook ];
-  buildInputs = with pkgs; [ openssl zlib stdenv.cc.cc.lib ];
+  buildInputs = with pkgs; [
+    openssl
+    zlib
+    stdenv.cc.cc.lib
+  ];
 
   dontUnpack = true;
   dontBuild = true;

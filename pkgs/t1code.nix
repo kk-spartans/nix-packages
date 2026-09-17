@@ -35,7 +35,7 @@ let
     '';
 
     outputHashMode = "recursive";
-    outputHash = "sha256-3/0ODleET/PaKvA9RqmX2tPZRm9QRdgGleY6qXXbnxA=";
+    outputHash = "sha256-MUPSzHxfw43XGIDJfLPWCheTxpHXekxtQd38AFC9KlM=";
   };
 in
 pkgs.stdenv.mkDerivation {
@@ -44,15 +44,14 @@ pkgs.stdenv.mkDerivation {
 
   dontUnpack = true;
 
+  nativeBuildInputs = [ pkgs.makeBinaryWrapper ];
+
   buildPhase = ''
     mkdir -p $out/libexec/t1code
     cp -r ${deps}/libexec/t1code/. $out/libexec/t1code/
     mkdir -p $out/bin
-    cat > $out/bin/t1code <<EOF
-#!${pkgs.stdenv.shell}
-exec ${pkgs.bun}/bin/bun $out/libexec/t1code/bin/t1code.js "$@"
-EOF
-    chmod +x $out/bin/t1code
+    makeWrapper ${pkgs.bun}/bin/bun $out/bin/t1code \
+      --add-flags $out/libexec/t1code/bin/t1code.js
     ln -s t1code $out/bin/t1
   '';
 

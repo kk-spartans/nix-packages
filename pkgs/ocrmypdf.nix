@@ -1,9 +1,13 @@
 { pkgs }:
 pkgs.stdenv.mkDerivation {
   pname = "ocrmypdf";
-  version = "17.11.0";
+  version = "17.12.1";
 
-  nativeBuildInputs = [ pkgs.uv pkgs.python312 pkgs.cacert ];
+  nativeBuildInputs = [
+    pkgs.uv
+    pkgs.python312
+    pkgs.cacert
+  ];
 
   dontUnpack = true;
 
@@ -14,7 +18,7 @@ pkgs.stdenv.mkDerivation {
     source .venv/bin/activate
     uv pip install \
       --extra-index-url https://download.pytorch.org/whl/cu124 \
-      ocrmypdf==17.11.0 \
+      ocrmypdf==17.12.1 \
       ocrmypdf-easyocr==0.3.0
     mkdir -p $out/bin
     cp $PWD/.venv/bin/ocrmypdf $out/bin/ocrmypdf

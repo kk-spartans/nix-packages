@@ -1,9 +1,13 @@
 { pkgs }:
 pkgs.stdenv.mkDerivation {
   pname = "hf";
-  version = "1.31.0";
+  version = "1.32.0";
 
-  nativeBuildInputs = [ pkgs.uv pkgs.python312 pkgs.cacert ];
+  nativeBuildInputs = [
+    pkgs.uv
+    pkgs.python312
+    pkgs.cacert
+  ];
 
   dontUnpack = true;
 
@@ -14,7 +18,7 @@ pkgs.stdenv.mkDerivation {
     source .venv/bin/activate
     uv pip install \
       --only-binary :all: \
-      huggingface-hub==1.31.0 \
+      huggingface-hub==1.32.0 \
       hf-transfer==0.1.9 \
       hf-xet==1.6.0
     mkdir -p $out/bin
