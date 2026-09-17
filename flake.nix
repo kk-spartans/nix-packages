@@ -28,11 +28,14 @@
         agent-browser-bin = import ./pkgs/agent-browser-bin.nix { pkgs = final; };
         pixie-sddm = import ./pkgs/pixie-sddm.nix { pkgs = final; };
         aw-watcher-lastfm = import ./pkgs/aw-watcher-lastfm.nix { pkgs = final; };
+        portless = import ./pkgs/portless.nix { pkgs = final; };
         t3-nightly-unwrapped = final.callPackage ./pkgs/t3-nightly-unwrapped.nix { };
         t3-nightly = final.callPackage ./pkgs/t3-nightly.nix { };
-      } // prev.lib.optionalAttrs prev.stdenv.isLinux {
+      } // prev.lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
         terminal-browser = import ./pkgs/terminal-browser.nix { pkgs = final; };
         terminal-agent-browser = import ./pkgs/terminal-agent-browser.nix { pkgs = final; };
+      } // prev.lib.optionalAttrs (prev.stdenv.hostPlatform.isLinux && prev.stdenv.hostPlatform.isx86_64) {
+        t1code = import ./pkgs/t1code.nix { pkgs = final; };
       };
 
       bun-baseline = import ./pkgs/bun-baseline.nix;
@@ -55,10 +58,12 @@
     in {
       inherit (pkgs)
         spogo fkill tokscale wacli discrawl discord-cli gogcli hf ocrmypdf
-        agent-browser-bin pixie-sddm aw-watcher-lastfm
+        agent-browser-bin pixie-sddm aw-watcher-lastfm portless
         t3-nightly t3-nightly-unwrapped;
-    } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+    } // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
       inherit (pkgs) terminal-browser terminal-agent-browser;
+    } // pkgs.lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.hostPlatform.isx86_64) {
+      inherit (pkgs) t1code;
     });
   };
 }
