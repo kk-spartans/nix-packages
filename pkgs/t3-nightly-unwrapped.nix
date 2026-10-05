@@ -6,11 +6,11 @@
   makeBinaryWrapper,
 }:
 let
-  version = "0.0.43-nightly.20260917.1851";
+  version = "0.0.46-nightly.20261005.2676";
 
   t3-linux-x64 = fetchurl {
     url = "https://registry.npmjs.org/@t3code/t3-linux-x64/-/t3-linux-x64-${version}.tgz";
-    hash = "sha256-67YGhDTt6Fi2RAAHQYRtFgRXgiK9gC7YqL/TPLCR3Dk=";
+    hash = "sha256-RRARlEiPs9nQo3pSkR1b3mkVYpOM6sCYfnKi9Uhif4o=";
   };
 in
 buildNpmPackage {
@@ -19,7 +19,7 @@ buildNpmPackage {
 
   src = ../t3-lock;
 
-  npmDepsHash = "sha256-fBxqADyQpwjWh3sqON/Byo3AfjJDkpQ6p83ArqI+zHw=";
+  npmDepsHash = "sha256-ez2FZWajYt1ajUQ4ctZlM8hKGuF5T34YEXPRFMy16kc=";
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 

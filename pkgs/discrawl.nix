@@ -17,10 +17,10 @@ in
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "discrawl";
-    rev = "b1ea76ebbb40196cba9e85501a267c7bd01cdac8";
-    hash = "sha256-yIjLe93JgG0QEaStazx7zAideG4G2wgeXftLCuC+sr0=";
+    rev = "52470d9c7187afa92d9edc29d1d6f1fcbe8e503c";
+    hash = "sha256-e0ryb2wDezPx3CAXBOV/i22smafFjFke6UAsCVOLLd0=";
   };
 
   subPackages = [ "cmd/discrawl" ];
-  vendorHash = "sha256-F567TQwzUXZgG07Na7g7X6E5Lhzoq6+QkSS2QWzwb8o=";
+  vendorHash = "sha256-KLOndHg5bj/saBJQ5wy9HnEMnLODcTJug98wUbM9xFI=";
 }

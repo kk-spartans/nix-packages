@@ -1,11 +1,11 @@
 { pkgs }:
 pkgs.stdenv.mkDerivation rec {
   pname = "portless";
-  version = "0.15.6";
+  version = "0.15.7";
 
   src = pkgs.fetchurl {
     url = "https://registry.npmjs.org/portless/-/portless-${version}.tgz";
-    hash = "sha256-SPFeXWPEd4RTTdletSAefmWM5D6uG3q5YNNLbWe5VIo=";
+    hash = "sha256-ghfH91djeBkcMk5vGi058xqceHo072g3K25o+VbJqPw=";
   };
 
   nativeBuildInputs = [ pkgs.bun ];
@@ -27,5 +27,5 @@ pkgs.stdenv.mkDerivation rec {
   installPhase = "true";
 
   outputHashMode = "recursive";
-  outputHash = "sha256-6boyfSGtDnHlEqjBBIIthhlaile5LUMKZ+5oNVV1i1U=";
+  outputHash = "sha256-+G1BDnW3ur5mBtc/1Cwjfq61SFbNfDT2oecVOpygXF4=";
 }

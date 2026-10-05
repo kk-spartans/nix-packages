@@ -1,12 +1,12 @@
 { pkgs }:
 let
-  version = "0.11.1";
+  version = "0.13.4";
   target = if pkgs.stdenv.hostPlatform.isAarch64 then "linux-arm64" else "linux-x64";
   srcHash =
     if pkgs.stdenv.hostPlatform.isAarch64 then
-      "sha256-7zTGgzPENS5RB9W9bFz3/oQKBcmkijcIS5/GX8mGOFw="
+      "sha256-DPVn2CGJlaJPts5LBsB8z1ioxReQYFgIc1Xx4vrRlp8="
     else
-      "sha256-sIMnZVqjGQJgzzSAcpS+fHxmhaomOaOTBVt8ZJ7rOko=";
+      "sha256-YnfaqrqxZxGrPxlhzf+tnvrF5wrFXVB24shkltZJ06Q=";
 in
 pkgs.stdenv.mkDerivation {
   pname = "terminal-browser";

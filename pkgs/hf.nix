@@ -1,6 +1,6 @@
 { pkgs }:
 let
-  version = "1.32.0";
+  version = "2.1.1";
 
   # Fixed-output deps tree: the only derivation that touches the network.
   # `uv pip install --target` lays out pure site-packages; the generated
@@ -42,7 +42,7 @@ let
     installPhase = "true";
 
     outputHashMode = "recursive";
-    outputHash = "sha256-Md4om3gekQQOVJIe1XrLs8kdNQX7k9jjVbe9HvVNbaI=";
+    outputHash = "sha256-0VnUcq94TBQWk/l0moofS1DQW0RkPjxyQ/38sDB0/pQ=";
   };
 in
 pkgs.stdenv.mkDerivation {
