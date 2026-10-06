@@ -32,7 +32,7 @@ let
     installPhase = "true";
 
     outputHashMode = "recursive";
-    outputHash = "sha256-5v3O7T2t6a1Tgagbc+k1B8oTGQOTbwJDIrR4WzF8o0w=";
+    outputHash = "sha256-aP0H1O8sBjm4WZ6XtgsknkJ1rjM/9ohI2T4DsInIZP4=";
   };
 in
 pkgs.stdenv.mkDerivation {
