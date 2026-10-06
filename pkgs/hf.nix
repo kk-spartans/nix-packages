@@ -26,7 +26,8 @@ let
     dontPatchShebangs = true;
 
     buildPhase = ''
-      export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+      export UV_HTTP_TIMEOUT=600
+    export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
       export HOME=$(mktemp -d)
       uv pip install \
         --target $out \

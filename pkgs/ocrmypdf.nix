@@ -12,6 +12,7 @@ pkgs.stdenv.mkDerivation {
   dontUnpack = true;
 
   buildPhase = ''
+    export UV_HTTP_TIMEOUT=600
     export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
     export HOME=$(mktemp -d)
     uv venv --python ${pkgs.python312}/bin/python3
