@@ -24,7 +24,7 @@
         discord-cli = import ./pkgs/discord-cli.nix { pkgs = final; };
         gogcli = import ./pkgs/gogcli.nix { pkgs = final; };
         hf = import ./pkgs/hf.nix { pkgs = final; };
-        ocrmypdf = import ./pkgs/ocrmypdf.nix { pkgs = final; };
+        ocrmypdf = import ./pkgs/ocrmypdf.nix { pkgs = final; lib = final.lib; };
         agent-browser-bin = import ./pkgs/agent-browser-bin.nix { pkgs = final; };
         pixie-sddm = import ./pkgs/pixie-sddm.nix { pkgs = final; };
         aw-watcher-lastfm = import ./pkgs/aw-watcher-lastfm.nix { pkgs = final; };

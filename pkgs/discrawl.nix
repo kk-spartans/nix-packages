@@ -23,4 +23,8 @@ in
 
   subPackages = [ "cmd/discrawl" ];
   vendorHash = "sha256-KLOndHg5bj/saBJQ5wy9HnEMnLODcTJug98wUbM9xFI=";
+
+  # Upstream resolves the version from this linker var and falls back to
+  # "devel"; without it `discrawl --version` prints "devel".
+  ldflags = [ "-X github.com/openclaw/discrawl/internal/cli.version=unstable-52470d9" ];
 }
