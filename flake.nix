@@ -37,8 +37,6 @@
       } // prev.lib.optionalAttrs (prev.stdenv.hostPlatform.isLinux && prev.stdenv.hostPlatform.isx86_64) {
         t1code = import ./pkgs/t1code.nix { pkgs = final; };
       };
-
-      bun-baseline = import ./pkgs/bun-baseline.nix;
     };
 
     homeManagerModules = {
@@ -53,7 +51,7 @@
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [ self.overlays.bun-baseline self.overlays.default ];
+        overlays = [ self.overlays.default ];
       };
     in {
       inherit (pkgs)

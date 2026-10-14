@@ -31,7 +31,7 @@ For each file, read it fully and classify:
 | `stdenv.mkDerivation` + `uv pip install` + `outputHashMode` | Python uv FOD | `curl -s https://pypi.org/pypi/<name>/json \| jq -r '.info.version'` | `version`, `outputHash`, and the `uv pip install <name>==<version>` line |
 | `stdenv*mkDerivation` + `fetchFromGitHub`/`fetchzip` (no FOD) | Plain fetch | `gh api repos/<owner>/<repo>/commits` or `/releases/latest` | `rev`/`version`, `hash` |
 | `buildNpmPackage` + `src = ../t3-lock` | npm lockfile package | `npm view <pkg> dist-tags --json` | `version`, `npmDepsHash`, plus `t3-lock/package.json` + lockfile |
-| `final: prev:` overlay | Nixpkgs overlay (e.g. `bun-baseline`) | `nix eval github:nixos/nixpkgs/master#<attr>.version --raw` + upstream release | `hash` (version is inherited) |
+| `final: prev:` overlay | Nixpkgs overlay | `nix eval github:nixos/nixpkgs/master#<attr>.version --raw` + upstream release | `hash` (version is inherited) |
 | `symlinkJoin` wrapper | Wrapper | inherits from unwrapped | only if harness/wrapper logic changes |
 | `stdenv.mkDerivation` + binary `fetchurl` + `autoPatchelfHook` | Binary tarball (e.g. `terminal-browser` from `zenbu-labs/terminal-browser`) | `gh api repos/zenbu-labs/terminal-browser/releases --jq '.[0].tag_name'` or `gh release view --repo zenbu-labs/terminal-browser` | `version`, `hash` per-platform |
 
@@ -59,7 +59,6 @@ Known package types (non-exhaustive — see discovery table above):
 | `pixie-sddm.nix`, `aw-watcher-lastfm.nix` | `stdenv{NoCC}.mkDerivation` | `fetchFromGitHub`/`fetchzip` | `rev`/`hash` |
 | `terminal-browser.nix` | `stdenv.mkDerivation` + `autoPatchelfHook` | `fetchurl` per-arch tarball from `github:zenbu-labs/terminal-browser` releases | `version`, `hash` per-arch |
 | `t3-nightly-unwrapped.nix` | `buildNpmPackage` | `../t3-lock` (npm) | `version`, `npmDepsHash`, plus `t3-lock` files |
-| `bun-baseline.nix` | overlay `final: prev:` | `fetchurl` bun baseline zip | `hash` (src), `version` is inherited from `prev.bun.version` – only hash usually needs update |
 | `t3-nightly.nix` | `symlinkJoin` wrapper | `t3-nightly-unwrapped` | no independent version – inherits from unwrapped; only update if harness list changes |
 
 ## General hash workflow
@@ -206,17 +205,6 @@ nix build .#t3-nightly --no-link
 ```
 
 `pkgs/t3-nightly.nix` rarely needs version change – it inherits from unwrapped. Only update if harness list changes (new `enable*` flags).
-
-### 8. `bun-baseline` overlay
-
-```bash
-# check nixpkgs bun version
-nix eval github:nixos/nixpkgs/master#bun.version --raw
-# overlay in pkgs/bun-baseline.nix overrides src for x86_64 baseline
-# update hash:
-nix store prefetch-file --json https://github.com/oven-sh/bun/releases/download/bun-v$(nix eval --raw github:nixos/nixpkgs/master#bun.version)/bun-linux-x64-baseline.zip
-# put sha256-... into pkgs/bun-baseline.nix
-```
 
 ## Flake and overlays
 
