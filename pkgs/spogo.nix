@@ -12,4 +12,8 @@ pkgs.buildGoModule {
 
   subPackages = [ "cmd/spogo" ];
   vendorHash = "sha256-Ivwxg+uq8fsC0FodGWKyMEBP1AyrIcbI6UmgvAsSQ9g=";
+
+  # Upstream defaults `version` to "dev"; without this `--version` prints
+  # "dev" regardless of the pinned rev.
+  ldflags = [ "-X github.com/steipete/spogo/internal/cli.version=unstable-bebab02" ];
 }

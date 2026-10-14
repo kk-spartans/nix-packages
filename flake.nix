@@ -24,7 +24,7 @@
         discord-cli = import ./pkgs/discord-cli.nix { pkgs = final; };
         gogcli = import ./pkgs/gogcli.nix { pkgs = final; };
         hf = import ./pkgs/hf.nix { pkgs = final; };
-        ocrmypdf = import ./pkgs/ocrmypdf.nix { pkgs = final; };
+        ocrmypdf = import ./pkgs/ocrmypdf.nix { pkgs = final; lib = final.lib; };
         agent-browser-bin = import ./pkgs/agent-browser-bin.nix { pkgs = final; };
         pixie-sddm = import ./pkgs/pixie-sddm.nix { pkgs = final; };
         aw-watcher-lastfm = import ./pkgs/aw-watcher-lastfm.nix { pkgs = final; };
@@ -37,8 +37,6 @@
       } // prev.lib.optionalAttrs (prev.stdenv.hostPlatform.isLinux && prev.stdenv.hostPlatform.isx86_64) {
         t1code = import ./pkgs/t1code.nix { pkgs = final; };
       };
-
-      bun-baseline = import ./pkgs/bun-baseline.nix;
     };
 
     homeManagerModules = {
@@ -53,7 +51,7 @@
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [ self.overlays.bun-baseline self.overlays.default ];
+        overlays = [ self.overlays.default ];
       };
     in {
       inherit (pkgs)
