@@ -18,13 +18,19 @@ in
       default = [ ];
       description = "Extra args passed to wacli sync (e.g. --refresh-groups). --follow is always added.";
     };
+
+    downloadMedia = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether to pass --download-media to wacli sync.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.user.services.wacli-sync = {
       Unit.Description = "wacli sync --follow";
       Service = {
-        ExecStart = "${lib.getExe cfg.package} sync --follow --download-media ${lib.escapeShellArgs cfg.extraArgs}";
+        ExecStart = "${lib.getExe cfg.package} sync --follow ${lib.optionalString cfg.downloadMedia "--download-media"} ${lib.escapeShellArgs cfg.extraArgs}";
         Restart = "always";
         RestartSec = "10s";
       };
