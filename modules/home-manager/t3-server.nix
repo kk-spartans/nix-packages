@@ -113,6 +113,21 @@ in
 
     package = lib.mkPackageOption pkgs "t3code" { };
 
+    deviceHub = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Install the full Android SDK (`pkgs.androidsdk`) into `home.packages`.
+        This is the complete SDK (cmdline-tools, platform-tools, build-tools,
+        platforms, emulator, system images and the NDK), not the lightweight
+        `android-tools` adb/fastboot shim.
+
+        The SDK is unfree: set `nixpkgs.config.android_sdk.accept_license = true;`
+        and enable unfree packages (`allowUnfree = true` or a matching
+        `allowUnfreePredicate`), otherwise evaluation fails.
+      '';
+    };
+
     harnesses = lib.mkOption {
       type = with lib.types; attrsOf bool;
       default = { };
@@ -213,6 +228,8 @@ in
         sudo tailscale set --operator ${config.home.username}
       Otherwise `tailscale serve` fails inside the service.
     '';
+
+    home.packages = lib.mkIf cfg.deviceHub [ pkgs.androidsdk ];
 
     systemd.user.services.t3-server = {
       Unit = {
