@@ -279,13 +279,58 @@ in
         assertion = !cfg.tailscale.serve || cfg.host == "127.0.0.1";
         message = "services.t3-server: tailscale.serve proxies http://127.0.0.1, so host must be 127.0.0.1.";
       }
+      {
+        assertion = !cfg.deviceHub || (pkgs.config.android_sdk.accept_license or false);
+        message = ''
+          services.t3-server.deviceHub installs pkgs.androidsdk, which is unfree
+          and requires the SDK license to be accepted. Add to your nixpkgs config:
+            nixpkgs.config.android_sdk.accept_license = true;
+        '';
+      }
+      {
+        assertion =
+          !cfg.deviceHub
+          || (pkgs.config.allowUnfree or false)
+          || (pkgs.config.allowUnfreePredicate or null) != null;
+        message = ''
+          services.t3-server.deviceHub installs pkgs.androidsdk, which is unfree.
+          Enable unfree packages:
+            nixpkgs.config.allowUnfree = true;
+          or an allowUnfreePredicate that permits `androidsdk`.
+        '';
+      }
+      {
+        assertion =
+          !cfg.deviceHub
+          || (
+            (!(lib.hasInfix "x86_64" cfg.deviceHubAvd.image) || pkgs.stdenv.hostPlatform.isx86_64)
+            && (!(lib.hasInfix "arm64" cfg.deviceHubAvd.image) || pkgs.stdenv.hostPlatform.isAarch64)
+          );
+        message = ''
+          services.t3-server.deviceHub: the configured AVD image
+            ${cfg.deviceHubAvd.image}
+          does not match this host (${pkgs.stdenv.hostPlatform.system}). The
+          emulator cannot accelerate a cross-architecture guest, so the AVD
+          would be listed but fail to boot. Pick a matching image via
+          services.t3-server.deviceHubAvd.image.
+        '';
+      }
     ];
 
-    warnings = lib.optional (tailscaleEnabled && cfg.tailscale.serve) ''
-      services.t3-server.tailscale.serve needs your user configured as tailscale operator:
-        sudo tailscale set --operator ${config.home.username}
-      Otherwise `tailscale serve` fails inside the service.
-    '';
+    warnings =
+      lib.optional (tailscaleEnabled && cfg.tailscale.serve) ''
+        services.t3-server.tailscale.serve needs your user configured as tailscale operator:
+          sudo tailscale set --operator ${config.home.username}
+        Otherwise `tailscale serve` fails inside the service.
+      ''
+      ++ lib.optional cfg.deviceHub ''
+        services.t3-server.deviceHub: the Android emulator needs /dev/kvm access,
+        which a home-manager module cannot grant (it is a NixOS-level setting).
+        On NixOS add your user to the kvm group:
+          users.users.${config.home.username}.extraGroups = [ "kvm" ];
+        Without it the AVD is listed by t3 but the emulator falls back to
+        extremely slow software emulation (or fails to start).
+      '';
 
     home.packages = lib.mkIf cfg.deviceHub [ pkgs.androidsdk ];
 
