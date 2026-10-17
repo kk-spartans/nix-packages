@@ -34,6 +34,30 @@ let
 
   tailscaleEnabled = cfg.tailscale.enable;
 
+  # t3's device hub (LocalDeviceHost.androidSdk) resolves the SDK root from
+  # ANDROID_HOME / ANDROID_SDK_ROOT, then requires `platform-tools/adb`,
+  # `emulator/emulator` and `cmdline-tools/latest/bin/avdmanager` to exist
+  # under that root. Nix's pkgs.androidsdk lays the command-line tools out
+  # under a versioned dir (`cmdline-tools/22.0`), never `latest`, so we point
+  # ANDROID_HOME at a symlink farm that adds the `latest` entry t3 looks for.
+  # Without it t3 reports Android as unavailable and the device panel shows
+  # "No simulators or emulators were found".
+  androidSdk = pkgs.runCommand "androidsdk-devicehub" { } ''
+    sdk=${pkgs.androidsdk}/libexec/android-sdk
+    mkdir -p $out/cmdline-tools
+    for entry in "$sdk"/*; do
+      base=$(basename "$entry")
+      if [ "$base" = cmdline-tools ]; then
+        continue
+      fi
+      ln -s "$entry" "$out/$base"
+    done
+    for entry in "$sdk"/cmdline-tools/*; do
+      ln -s "$entry" "$out/cmdline-tools/$(basename "$entry")"
+      ln -s "$entry" "$out/cmdline-tools/latest"
+    done
+  '';
+
   servicePath = lib.makeBinPath (
     [
       pkgs.coreutils
@@ -117,15 +141,49 @@ in
       type = lib.types.bool;
       default = false;
       description = ''
-        Install the full Android SDK (`pkgs.androidsdk`) into `home.packages`.
-        This is the complete SDK (cmdline-tools, platform-tools, build-tools,
-        platforms, emulator, system images and the NDK), not the lightweight
-        `android-tools` adb/fastboot shim.
+        Wire t3's device hub up for Android emulators. Enabling this:
+
+        - installs the full Android SDK (`pkgs.androidsdk`) into `home.packages`
+          (complete SDK: cmdline-tools, platform-tools, build-tools, platforms,
+          emulator, system images and the NDK, not the lightweight
+          `android-tools` adb/fastboot shim);
+        - exports `ANDROID_HOME`/`ANDROID_SDK_ROOT` (in the t3-server systemd
+          unit, `home.sessionVariables`, and to t3 itself) pointing at an SDK
+          root that t3 accepts — nix ships the command-line tools as
+          `cmdline-tools/<version>` while t3 hardcodes
+          `cmdline-tools/latest/bin/avdmanager`, so we point at a symlink farm
+          that adds `latest`;
+        - creates the AVD in `deviceHubAvd` on activation if it does not exist,
+          so the Device panel lists an emulator instead of
+          "No simulators or emulators were found".
 
         The SDK is unfree: set `nixpkgs.config.android_sdk.accept_license = true;`
         and enable unfree packages (`allowUnfree = true` or a matching
         `allowUnfreePredicate`), otherwise evaluation fails.
       '';
+    };
+
+    deviceHubAvd = {
+      name = lib.mkOption {
+        type = lib.types.str;
+        default = "t3-pixel";
+        description = "Name of the Android Virtual Device created on activation.";
+      };
+
+      device = lib.mkOption {
+        type = lib.types.str;
+        default = "pixel_7";
+        description = "Hardware profile passed to `avdmanager -d`.";
+      };
+
+      image = lib.mkOption {
+        type = lib.types.str;
+        default = "system-images;android-36;google_apis;x86_64";
+        description = ''
+          System image package passed to `avdmanager -k`. Must be one of the
+          images bundled in `pkgs.androidsdk`.
+        '';
+      };
     };
 
     harnesses = lib.mkOption {
@@ -231,6 +289,30 @@ in
 
     home.packages = lib.mkIf cfg.deviceHub [ pkgs.androidsdk ];
 
+    home.sessionVariables = lib.mkIf cfg.deviceHub {
+      ANDROID_HOME = "${androidSdk}";
+      ANDROID_SDK_ROOT = "${androidSdk}";
+    };
+
+    # Create the emulator AVD once so t3's Device panel has something to list.
+    # Idempotent: skipped when the AVD already exists. Never fails activation
+    # (avdmanager is best-effort; the panel degrades to the empty state).
+    home.activation.t3-device-hub-avd = lib.mkIf cfg.deviceHub (
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        export ANDROID_HOME=${lib.escapeShellArg "${androidSdk}"}
+        export ANDROID_SDK_ROOT="$ANDROID_HOME"
+        export ANDROID_AVD_HOME=${lib.escapeShellArg "${config.home.homeDirectory}/.android/avd"}
+        if ! "$ANDROID_HOME/emulator/emulator" -list-avds 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qx ${lib.escapeShellArg cfg.deviceHubAvd.name}; then
+          ${pkgs.coreutils}/bin/mkdir -p "$ANDROID_AVD_HOME"
+          echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd \
+            -n ${lib.escapeShellArg cfg.deviceHubAvd.name} \
+            -k ${lib.escapeShellArg cfg.deviceHubAvd.image} \
+            -d ${lib.escapeShellArg cfg.deviceHubAvd.device} \
+            --force || true
+        fi
+      ''
+    );
+
     systemd.user.services.t3-server = {
       Unit = {
         Description = "T3 Code headless server";
@@ -244,7 +326,14 @@ in
         RestartSec = "5s";
         # Inherit user's full PATH so tools from nix-profile / home.packages (spogo etc.) are visible.
         # systemd user services don't inherit the login shell PATH, so we explicitly add the usual profile dirs.
-        Environment = [ "PATH=${servicePath}:${config.home.homeDirectory}/.nix-profile/bin:${config.home.homeDirectory}/.local/state/nix/profile/bin:/etc/profiles/per-user/${config.home.username}/bin:/run/current-system/sw/bin" ];
+        Environment = [
+          "PATH=${servicePath}${lib.optionalString cfg.deviceHub ":${androidSdk}/platform-tools:${androidSdk}/emulator"}:${config.home.homeDirectory}/.nix-profile/bin:${config.home.homeDirectory}/.local/state/nix/profile/bin:/etc/profiles/per-user/${config.home.username}/bin:/run/current-system/sw/bin"
+        ]
+        ++ lib.optionals cfg.deviceHub [
+          "ANDROID_HOME=${androidSdk}"
+          "ANDROID_SDK_ROOT=${androidSdk}"
+          "ANDROID_AVD_HOME=${config.home.homeDirectory}/.android/avd"
+        ];
         # Light touch on purpose: t3 spawns interactive agent harnesses
         # (pty, git, network); aggressive namespacing breaks them.
       };
