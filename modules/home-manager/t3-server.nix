@@ -115,7 +115,7 @@ in
 
     deviceHub = lib.mkOption {
       type = lib.types.bool;
-      default = true;
+      default = false;
       description = ''
         Install the full Android SDK (`pkgs.androidsdk`) into `home.packages`.
         This is the complete SDK (cmdline-tools, platform-tools, build-tools,
