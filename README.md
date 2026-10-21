@@ -1,25 +1,16 @@
 # Custom nix packages
 
-Packages I made when there is no official nixpkgs package, or it's really
-outdated and uses a stack I don't like.
+Packages I made when there is no official nixpkgs package, or it's really outdated and uses a stack I don't like.
 
 ## Updates
 
-`.github/workflows/update-packages.yml` runs every 6 hours: it bumps the nixpkgs
-input, updates **every** package and opens a PR.
+`.github/workflows/update-packages.yml` runs every 6 hours: it bumps the nixpkgs input, updates **every** package, commits directly to `main`, and pushes.
 
-- GitHub-backed Go packages (`spogo`, `wacli`, `gogcli`, `discrawl`) follow the
-  default branch head (`--version branch`), not release tags.
-- GitHub tag/release tarballs (`tokscale`, `agent-browser`, `aw-watcher-lastfm`,
-  `terminal-browser`, `t3-unwrapped`, `t3-nightly-unwrapped`) are bumped from
-  their GitHub releases; `terminal-browser` refreshes both arch hashes.
-- npm tarballs (`fkill`, `portless`, `t1code`) and PyPI packages (`hf`,
-  `ocrmypdf`) publish their version + hashes through a `*-deps` fixed-output
-  derivation, which is what `nix-update` targets. `ocrmypdf` regenerates its
-  hashed `pkgs/ocrmypdf-requirements.txt` lock from `pkgs/ocrmypdf.in` first.
+- GitHub-backed Go packages (`spogo`, `wacli`, `gogcli`, `discrawl`) follow the default branch head (`--version branch`), not release tags.
+- GitHub tag/release tarballs (`tokscale`, `agent-browser`, `aw-watcher-lastfm`, `terminal-browser`, `t3-unwrapped`, `t3-nightly-unwrapped`) are bumped from their GitHub releases; `terminal-browser` refreshes both arch hashes.
+- npm tarballs (`fkill`, `portless`, `t1code`) and PyPI packages (`hf`, `ocrmypdf`) publish their version + hashes through a `*-deps` fixed-output derivation, which is what `nix-update` targets. `ocrmypdf` regenerates its hashed `pkgs/ocrmypdf-requirements.txt` lock from `pkgs/ocrmypdf.in` first.
 
-The `*-deps` attributes exist only so the updater has a normal derivation to
-evaluate; the user-facing packages are the launchers next to them.
+The `*-deps` attributes exist only so the updater has a normal derivation to evaluate; the user-facing packages are the launchers next to them.
 
 ## Home Manager modules
 
@@ -56,24 +47,30 @@ services.wacli-sync.enable = true;
 
 ### `programs.agent-browser`
 
-Installs `agent-browser` with a per-host wrapper (mac-pro: persistent Chrome
-over the tailnet; kk-spartans: local cloak container) and the upstream + local
-policy skills.
+Installs the `agent-browser` CLI and the upstream agent-browser skill from vercel-labs/agent-browser.
 
 ```nix
 imports = [ inputs.nix-packages.homeManagerModules.agent-browser ];
 programs.agent-browser.enable = true;
 ```
 
-Requires the `agent-skills` home-manager module; skills are skipped when it is
-not imported.
+Requires the `agent-skills` home-manager module; the skill is skipped when it is not imported.
 
-### `programs.cli-completions`
+### `programs.spogo`, `programs.gogcli`, `programs.wacli`, `programs.t3`, `programs.hf`
 
-Generates fish completions for every CLI here that supports it (`spogo`,
-`wacli`, `gog`, `t3`, `hf`) into `~/.config/fish/completions`.
+Each installs its CLI and optionally generates shell completions via `enableFishIntegration` (`fish`, `bash`, `zsh`, or `null`). Defaults to `fish` when `programs.fish.enable` is set, otherwise `null`.
 
 ```nix
-imports = [ inputs.nix-packages.homeManagerModules.completions ];
-programs.cli-completions.enable = true;
+imports = [
+  inputs.nix-packages.homeManagerModules.spogo
+  inputs.nix-packages.homeManagerModules.gogcli
+  inputs.nix-packages.homeManagerModules.wacli
+  inputs.nix-packages.homeManagerModules.t3
+  inputs.nix-packages.homeManagerModules.hf
+];
+
+programs.spogo = {
+  enable = true;
+  enableFishIntegration = "fish";
+};
 ```

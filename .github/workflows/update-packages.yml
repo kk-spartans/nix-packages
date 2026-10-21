@@ -8,11 +8,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
-
-concurrency:
-  group: update-packages
-  cancel-in-progress: false
 
 jobs:
   update:
@@ -34,13 +29,6 @@ jobs:
         run: |
           set -uo pipefail
 
-          report="$RUNNER_TEMP/report.md"
-          {
-            echo "## Automated package update"
-            echo
-            echo '```'
-          } > "$report"
-
           nix-update() {
             echo "\$ nix run nixpkgs#nix-update -- $*"
             nix run nixpkgs#nix-update -- "$@" 2>&1 || echo "!! failed: $*"
@@ -49,13 +37,12 @@ jobs:
           latest_npm() { curl -fsSL "https://registry.npmjs.org/$1/latest" | jq -r .version; }
           latest_pypi() { curl -fsSL "https://pypi.org/pypi/$1/json" | jq -r .info.version; }
 
-          # GitHub-backed Go packages: follow the default branch head so the
-          # pinned rev is always the latest commit, not the latest tag.
+          # GitHub-backed Go packages: follow the default branch head.
           for p in spogo wacli gogcli discrawl; do
             nix-update --flake "$p" --version branch --build
           done
 
-          # Versioned GitHub tarballs (tag is part of the src URL).
+          # Versioned GitHub tarballs.
           for p in tokscale agent-browser aw-watcher-lastfm; do
             nix-update --flake "$p" --build
           done
@@ -70,9 +57,7 @@ jobs:
             nix-update --flake t3-nightly-unwrapped --version "$nightly" --build
           fi
 
-          # Per-arch binary release. The repo also tags other products
-          # (pixel-v*, electron-*), so pick the newest plain vX.Y.Z tag and
-          # pass it explicitly to both arch pins.
+          # Per-arch binary release: pick the newest plain vX.Y.Z tag.
           tb=$(curl -fsSL "https://api.github.com/repos/zenbu-labs/terminal-browser/releases?per_page=40" \
             | jq -r '[.[] | select(.tag_name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))][0].tag_name' \
             | sed 's/^v//')
@@ -110,23 +95,18 @@ jobs:
             nix-update --flake ocrmypdf-deps --version "$v" --build
           fi
 
-          echo '```' >> "$report"
-          echo >> "$report"
-          echo "Every package in this flake is covered by the steps above." >> "$report"
-          cat "$report" >> "$GITHUB_STEP_SUMMARY"
-
       - name: Check flake
         run: nix flake check --no-build
 
-      - name: Open / update pull request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          branch: automation/update-packages
-          delete-branch: true
-          title: "chore: update packages"
-          commit-message: "chore: update packages"
-          body-path: ${{ runner.temp }}/report.md
-          add-paths: |
-            flake.lock
-            flake.nix
-            pkgs
+      - name: Commit and push to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ github.token }}@github.com/kk-spartans/nix-packages.git"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update packages"
+            git push origin HEAD:main
+          else
+            echo "no changes to commit"
+          fi
