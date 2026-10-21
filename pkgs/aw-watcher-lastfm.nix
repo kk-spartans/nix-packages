@@ -1,10 +1,10 @@
 { pkgs }:
-pkgs.stdenvNoCC.mkDerivation {
+pkgs.stdenvNoCC.mkDerivation rec {
   pname = "aw-watcher-lastfm";
   version = "0.6.1";
 
   src = pkgs.fetchzip {
-    url = "https://github.com/0xbrayo/aw-watcher-lastfm/releases/download/v0.6.1/aw-watcher-lastfm-linux.zip";
+    url = "https://github.com/0xbrayo/aw-watcher-lastfm/releases/download/v${version}/aw-watcher-lastfm-linux.zip";
     hash = "sha256-mLq8Mk/4O7lybJrimi3WCu6LYnT5XChArCeAcvZmLOs=";
   };
 

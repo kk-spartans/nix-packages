@@ -3,19 +3,17 @@
   stdenv,
   fetchurl,
   makeBinaryWrapper,
-  version,
-  hash,
 }:
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   pname = "t3-unwrapped";
-  inherit version;
+  version = "0.1.1";
 
   # Upstream publishes the self-contained CLI as a release archive. The npm
   # packages are just launchers (0.1.x even downloads this archive at runtime),
   # so the archive is the real artifact.
   src = fetchurl {
     url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/t3-${version}-linux-x64.tar.gz";
-    inherit hash;
+    hash = "sha256-M8Q+ovgDIVZi9aMf354byoarZ8rE8jmFZcK6EuF8IYU=";
   };
 
   sourceRoot = "t3-${version}-linux-x64";

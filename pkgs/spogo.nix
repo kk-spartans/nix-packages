@@ -1,7 +1,7 @@
 { pkgs }:
-pkgs.buildGoModule {
+pkgs.buildGoModule rec {
   pname = "spogo";
-  version = "unstable";
+  version = "0.13.2-unstable-2026-10-21";
 
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
@@ -15,5 +15,5 @@ pkgs.buildGoModule {
 
   # Upstream defaults `version` to "dev"; without this `--version` prints
   # "dev" regardless of the pinned rev.
-  ldflags = [ "-X github.com/steipete/spogo/internal/cli.version=unstable-be23d8b" ];
+  ldflags = [ "-X github.com/steipete/spogo/internal/cli.version=${version}" ];
 }

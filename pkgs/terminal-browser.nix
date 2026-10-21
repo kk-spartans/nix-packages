@@ -2,20 +2,21 @@
 let
   version = "0.13.4";
   target = if pkgs.stdenv.hostPlatform.isAarch64 then "linux-arm64" else "linux-x64";
-  srcHash =
-    if pkgs.stdenv.hostPlatform.isAarch64 then
-      "sha256-DPVn2CGJlaJPts5LBsB8z1ioxReQYFgIc1Xx4vrRlp8="
-    else
-      "sha256-YnfaqrqxZxGrPxlhzf+tnvrF5wrFXVB24shkltZJ06Q=";
 in
 pkgs.stdenv.mkDerivation {
   pname = "terminal-browser";
   inherit version;
 
-  src = pkgs.fetchurl {
-    url = "https://github.com/zenbu-labs/terminal-browser/releases/download/v${version}/terminal-browser-${target}.tar.gz";
-    hash = srcHash;
-  };
+  # The aarch64 tarball lives in its own file so nix-update can move its
+  # version + hash independently (`--system aarch64-linux`).
+  src =
+    if pkgs.stdenv.hostPlatform.isAarch64 then
+      pkgs.callPackage ./terminal-browser-aarch64.nix { }
+    else
+      pkgs.fetchurl {
+        url = "https://github.com/zenbu-labs/terminal-browser/releases/download/v${version}/terminal-browser-linux-x64.tar.gz";
+        hash = "sha256-YnfaqrqxZxGrPxlhzf+tnvrF5wrFXVB24shkltZJ06Q=";
+      };
 
   sourceRoot = "terminal-browser";
 
