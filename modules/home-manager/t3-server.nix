@@ -356,7 +356,8 @@ in
         extremely slow software emulation (or fails to start).
       '';
 
-    home.packages = lib.mkIf cfg.enable [ cfg.package ] ++ lib.mkIf cfg.deviceHub [ pkgs.androidsdk ];
+    home.packages =
+      lib.optionals cfg.enable [ cfg.package ] ++ lib.optionals cfg.deviceHub [ pkgs.androidsdk ];
 
     # Shell completions for the `t3` CLI.
     xdg.configFile = lib.listToAttrs (
