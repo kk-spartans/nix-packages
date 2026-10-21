@@ -363,25 +363,31 @@ in
       lib.optionals cfg.enableFishIntegration [
         {
           name = "fish/completions/t3.fish";
-          value = pkgs.runCommand "t3-fish-completion" { buildInputs = [ t3Package ]; } ''
-            ${t3Package}/bin/t3 --completions fish > $out
-          '';
+          value = {
+            source = pkgs.runCommand "t3-fish-completion" { buildInputs = [ t3Package ]; } ''
+              ${t3Package}/bin/t3 --completions fish > $out
+            '';
+          };
         }
       ]
       ++ lib.optionals cfg.enableBashIntegration [
         {
           name = "bash/completions/t3";
-          value = pkgs.runCommand "t3-bash-completion" { buildInputs = [ t3Package ]; } ''
-            ${t3Package}/bin/t3 --completions bash > $out
-          '';
+          value = {
+            source = pkgs.runCommand "t3-bash-completion" { buildInputs = [ t3Package ]; } ''
+              ${t3Package}/bin/t3 --completions bash > $out
+            '';
+          };
         }
       ]
       ++ lib.optionals cfg.enableZshIntegration [
         {
           name = "zsh/completions/_t3";
-          value = pkgs.runCommand "t3-zsh-completion" { buildInputs = [ t3Package ]; } ''
-            ${t3Package}/bin/t3 --completions zsh > $out
-          '';
+          value = {
+            source = pkgs.runCommand "t3-zsh-completion" { buildInputs = [ t3Package ]; } ''
+              ${t3Package}/bin/t3 --completions zsh > $out
+            '';
+          };
         }
       ]
     );
