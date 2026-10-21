@@ -30,7 +30,7 @@
         aw-watcher-lastfm = import ./pkgs/aw-watcher-lastfm.nix { pkgs = final; };
         portless = import ./pkgs/portless.nix { pkgs = final; };
         t3 = final.callPackage ./pkgs/t3.nix { };
-        t3-nightly = final.callPackage ./pkgs/t3-nightly.nix { };
+        t3-nightly = final.callPackage ./pkgs/t3.nix (import ./pkgs/t3-nightly.nix);
       } // prev.lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
         terminal-browser = import ./pkgs/terminal-browser.nix { pkgs = final; };
         terminal-agent-browser = import ./pkgs/terminal-agent-browser.nix { pkgs = final; };

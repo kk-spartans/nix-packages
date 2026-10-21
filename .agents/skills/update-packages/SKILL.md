@@ -59,7 +59,7 @@ Known package types (non-exhaustive — see discovery table above):
 | `terminal-browser.nix` | `stdenv.mkDerivation` + `autoPatchelfHook` | `fetchurl` per-arch tarball from `github:zenbu-labs/terminal-browser` releases | `version`, `hash` per-arch |
 | `t3-unwrapped.nix` | `stdenv.mkDerivation` (Node SEA binary) | `fetchurl` of the `t3-<version>-linux-x64.tar.gz` GitHub release asset | `version` + `hash` (passed in by the wrapper) |
 | `t3.nix` | generic `symlinkJoin` wrapper + harness `enable*` flags | `t3-unwrapped` | stable pins `t3Version`/`t3Hash` defaults; wrapper logic only when harness list changes |
-| `t3-nightly.nix` | thin `callPackage ./t3.nix { ... }` | `t3.nix` | `t3Version` + `t3Hash` |
+| `t3-nightly.nix` | plain attrset of pins consumed by `callPackage ./t3.nix` | `t3.nix` | `t3Version` + `t3Hash` |
 
 ## General hash workflow
 
@@ -221,8 +221,9 @@ Notes:
 - `t3-unwrapped.nix` sets `dontStrip = true` and does **not** run
   `autoPatchelfHook`; see the Node SEA pitfall below.
 - Stable and nightly share `pkgs/t3.nix` (both expose the harness
-  `enable*` flags). `t3-nightly.nix` is a three-line `callPackage` with its
-  own pin.
+  `enable*` flags). `t3-nightly.nix` is a plain attrset of version/hash pins
+  that `flake.nix` passes to `callPackage ./t3.nix`, so `.override` targets
+  the wrapper (wrapping it in another function would swallow `.override`).
 - `t3-unwrapped` must **not** be added to the overlay: `callPackage` would
   auto-supply it and silently override the version-specific default
   (`t3-nightly` would then build the stable binary). Use
