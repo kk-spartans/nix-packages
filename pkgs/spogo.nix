@@ -6,8 +6,8 @@ pkgs.buildGoModule {
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "spogo";
-    rev = "bebab026d646f77d3a660c849ffe5fdb8e34e956";
-    hash = "sha256-Kl7bDE1ujCqpH5bIJmzuI6RkcSZcSq4x/AkIsIH5Dlg=";
+    rev = "be23d8b2023b100f1b87e4d5672e36a6b72f45bb";
+    hash = "sha256-snyUl0isNVn5PenluBOwI+CWeOhK/WGocuiY19f0w2M=";
   };
 
   subPackages = [ "cmd/spogo" ];
@@ -15,5 +15,5 @@ pkgs.buildGoModule {
 
   # Upstream defaults `version` to "dev"; without this `--version` prints
   # "dev" regardless of the pinned rev.
-  ldflags = [ "-X github.com/steipete/spogo/internal/cli.version=unstable-bebab02" ];
+  ldflags = [ "-X github.com/steipete/spogo/internal/cli.version=unstable-be23d8b" ];
 }

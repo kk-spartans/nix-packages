@@ -1,6 +1,6 @@
 { pkgs }:
 let
-  version = "2.1.1";
+  version = "2.2.0";
 
   # Fixed-output deps tree: the only derivation that touches the network.
   # `uv pip install --target` lays out pure site-packages; the generated
@@ -36,14 +36,14 @@ let
         hf==${version} \
         huggingface-hub==${version} \
         hf-transfer==0.1.9 \
-        hf-xet==1.6.0
+        hf-xet==1.7.0
       rm -rf $out/bin
     '';
 
     installPhase = "true";
 
     outputHashMode = "recursive";
-    outputHash = "sha256-xJ5GroB09eSwd2n/zkmIvPmYEs3o8KChj5T6sqpvS1M=";
+    outputHash = "sha256-Cvf4228F9F935LIHTLxuaPh9AJIag2p1FlC7kOQKKgg=";
   };
 in
 pkgs.stdenv.mkDerivation {

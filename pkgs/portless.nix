@@ -1,10 +1,10 @@
 { pkgs }:
 let
-  version = "0.15.7";
+  version = "0.15.8";
 
   src = pkgs.fetchurl {
     url = "https://registry.npmjs.org/portless/-/portless-${version}.tgz";
-    hash = "sha256-ghfH91djeBkcMk5vGi058xqceHo072g3K25o+VbJqPw=";
+    hash = "sha256-wWX4V30dnlewSpPyIAQyrQoTQ6AyAnpfOOYIoJLA9EM=";
   };
 
   deps = pkgs.stdenv.mkDerivation {
@@ -37,7 +37,7 @@ let
     '';
 
     outputHashMode = "recursive";
-    outputHash = "sha256-ZKoflq5hPuPKaefIueRnilG7E/P6Z++5JVKPKnoj+jk=";
+    outputHash = "sha256-y2MT3jZIQjk2ak9Izn3R163PBebqCWbRuMpHjplItjo=";
   };
 in
 pkgs.stdenv.mkDerivation {

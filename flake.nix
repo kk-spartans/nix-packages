@@ -29,7 +29,7 @@
         pixie-sddm = import ./pkgs/pixie-sddm.nix { pkgs = final; };
         aw-watcher-lastfm = import ./pkgs/aw-watcher-lastfm.nix { pkgs = final; };
         portless = import ./pkgs/portless.nix { pkgs = final; };
-        t3-nightly-unwrapped = final.callPackage ./pkgs/t3-nightly-unwrapped.nix { };
+        t3 = final.callPackage ./pkgs/t3.nix { };
         t3-nightly = final.callPackage ./pkgs/t3-nightly.nix { };
       } // prev.lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
         terminal-browser = import ./pkgs/terminal-browser.nix { pkgs = final; };
@@ -57,7 +57,7 @@
       inherit (pkgs)
         spogo fkill tokscale wacli discrawl discord-cli gogcli hf ocrmypdf
         agent-browser-bin pixie-sddm aw-watcher-lastfm portless
-        t3-nightly t3-nightly-unwrapped;
+        t3 t3-nightly;
     } // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
       inherit (pkgs) terminal-browser terminal-agent-browser;
     } // pkgs.lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.hostPlatform.isx86_64) {

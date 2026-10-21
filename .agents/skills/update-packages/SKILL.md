@@ -30,7 +30,7 @@ For each file, read it fully and classify:
 | `stdenv.mkDerivation` + `fetchurl` + `outputHashMode = "recursive"` | FOD tarball (npm/bun) | `npm view <pkg> version` | `version`, `hash`, `outputHash` |
 | `stdenv.mkDerivation` + `uv pip install` + `outputHashMode` | Python uv FOD | `curl -s https://pypi.org/pypi/<name>/json \| jq -r '.info.version'` | `version`, `outputHash`, and the `uv pip install <name>==<version>` line |
 | `stdenv*mkDerivation` + `fetchFromGitHub`/`fetchzip` (no FOD) | Plain fetch | `gh api repos/<owner>/<repo>/commits` or `/releases/latest` | `rev`/`version`, `hash` |
-| `buildNpmPackage` + `src = ../t3-lock` | npm lockfile package | `npm view <pkg> dist-tags --json` | `version`, `npmDepsHash`, plus `t3-lock/package.json` + lockfile |
+| `buildNpmPackage` + `src = ../<lock-dir>` | npm lockfile package | `npm view <pkg> dist-tags --json` | `version`, `npmDepsHash`, plus lock dir files |
 | `final: prev:` overlay | Nixpkgs overlay | `nix eval github:nixos/nixpkgs/master#<attr>.version --raw` + upstream release | `hash` (version is inherited) |
 | `symlinkJoin` wrapper | Wrapper | inherits from unwrapped | only if harness/wrapper logic changes |
 | `stdenv.mkDerivation` + binary `fetchurl` + `autoPatchelfHook` | Binary tarball (e.g. `terminal-browser` from `zenbu-labs/terminal-browser`) | `gh api repos/zenbu-labs/terminal-browser/releases --jq '.[0].tag_name'` or `gh release view --repo zenbu-labs/terminal-browser` | `version`, `hash` per-platform |
@@ -42,8 +42,7 @@ If a package doesn't match any row, read its `src` fetcher and builder and apply
 ```bash
 ls pkgs/*.nix
 cat flake.nix
-cat pkgs/t3-nightly-unwrapped.nix  # buildNpmPackage + t3-lock
-cat t3-lock/package.json
+cat pkgs/t3-unwrapped.nix pkgs/t3.nix pkgs/t3-nightly.nix  # t3: GitHub release archive
 ```
 
 Known package types (non-exhaustive — see discovery table above):
@@ -58,8 +57,9 @@ Known package types (non-exhaustive — see discovery table above):
 | `discord-cli.nix` | two-phase `uv`: deps FOD (`uv pip install --target`, `rm -rf $out/bin`) + plain launcher drv | PyPI `kabi-discord-cli` | `version`, `outputHash` of the inner `deps` FOD |
 | `pixie-sddm.nix`, `aw-watcher-lastfm.nix` | `stdenv{NoCC}.mkDerivation` | `fetchFromGitHub`/`fetchzip` | `rev`/`hash` |
 | `terminal-browser.nix` | `stdenv.mkDerivation` + `autoPatchelfHook` | `fetchurl` per-arch tarball from `github:zenbu-labs/terminal-browser` releases | `version`, `hash` per-arch |
-| `t3-nightly-unwrapped.nix` | `buildNpmPackage` | `../t3-lock` (npm) | `version`, `npmDepsHash`, plus `t3-lock` files |
-| `t3-nightly.nix` | `symlinkJoin` wrapper | `t3-nightly-unwrapped` | no independent version – inherits from unwrapped; only update if harness list changes |
+| `t3-unwrapped.nix` | `stdenv.mkDerivation` (Node SEA binary) | `fetchurl` of the `t3-<version>-linux-x64.tar.gz` GitHub release asset | `version` + `hash` (passed in by the wrapper) |
+| `t3.nix` | generic `symlinkJoin` wrapper + harness `enable*` flags | `t3-unwrapped` | stable pins `t3Version`/`t3Hash` defaults; wrapper logic only when harness list changes |
+| `t3-nightly.nix` | thin `callPackage ./t3.nix { ... }` | `t3.nix` | `t3Version` + `t3Hash` |
 
 ## General hash workflow
 
@@ -78,6 +78,20 @@ For `fetchFromGitHub` you can also use `nix-prefetch-github` or:
 nix store prefetch-file --json https://github.com/<owner>/<repo>/archive/<tag>.tar.gz
 nix-prefetch-url --unpack https://github.com/<owner>/<repo>/archive/<tag>.tar.gz  # gives SRI for fetchzip/fetchFromGitHub (convert with `nix hash convert`)
 ```
+
+> **Hash-type trap (burned twice):** `--unpack` hashes the *unpacked tree* and only
+> matches `fetchzip` / `fetchFromGitHub`. A plain `fetchurl` of a `.tar.gz`
+> (Rust crates, release archives, npm tarballs) needs the **file** hash — drop
+> `--unpack`:
+>
+> ```bash
+> nix store prefetch-file --json <url>              # fetchurl
+> nix store prefetch-file --json --unpack <url>     # fetchzip / fetchFromGitHub
+> ```
+>
+> Symptom when you get it wrong: the build fails with
+> `specified: sha256-X / got: sha256-Y` where `got` differs from what you
+> prefetched. Re-prefetch without `--unpack` instead of trusting the first value.
 
 For per-arch binary tarballs (like `terminal-browser` from `zenbu-labs/terminal-browser`):
 
@@ -174,44 +188,53 @@ nix build .#terminal-browser --no-link 2>&1 | tail -n 20
 # for other binary tarballs, adapt: use gh api for github releases, or curl -I probe for direct dl hosts
 ```
 
-### 7. `t3-nightly` (npm nightly, the most involved)
+### 7. `t3` / `t3-nightly` (Node SEA release archive)
 
-Current version pinned in `pkgs/t3-nightly-unwrapped.nix:version` and `t3-lock/package.json`. Steps:
+`t3-unwrapped.nix` is generic: it takes `version` + `hash` and fetches
 
-```bash
-# 1. get latest nightly
-npm view t3 dist-tags --json  # look at "nightly"
-npm view t3@nightly version
-# e.g. 0.0.34-nightly.20260825.1185
-
-# 2. update t3-lock/package.json
-jq --arg v "$(npm view t3@nightly version)" '.dependencies.t3 = $v' t3-lock/package.json > /tmp/pkg.json && mv /tmp/pkg.json t3-lock/package.json
-
-# 3. regenerate lockfile (outside Nix, needs npm)
-npm --prefix t3-lock install --package-lock-only
-
-# 4. update pkgs/t3-nightly-unwrapped.nix version to match
-#    edit `version = "0.0.34-nightly...."`
-
-# 5. refresh npmDepsHash
-# set npmDepsHash = lib.fakeHash, then:
-nix build .#t3-nightly-unwrapped --no-link 2>&1 | grep "got:"
-# copy sha256-... into npmDepsHash
-
-# 6. verify
-nix build .#t3-nightly-unwrapped --no-link --print-out-paths
-nix build .#t3-nightly --no-link
-./result/bin/t3 --version  # should match nightly
+```
+https://github.com/pingdotgg/t3code/releases/download/v<version>/t3-<version>-linux-x64.tar.gz
 ```
 
-`pkgs/t3-nightly.nix` rarely needs version change – it inherits from unwrapped. Only update if harness list changes (new `enable*` flags).
+Do **not** go through npm. Since 0.1.x the `t3` npm package is a runtime
+downloader, and npm 11 cannot produce a `package-lock.json` that `npm ci`
+accepts for the 0.1.x dependency tree (it omits cross-platform optional deps
+and then fails its own sync check). The GitHub release archive is the real
+artifact: `t3` binary + `node_modules/` + `client/`.
+
+```bash
+# stable version lives in pkgs/t3.nix (t3Version/t3Hash defaults),
+# nightly in pkgs/t3-nightly.nix.
+npm view t3 dist-tags --json   # latest / nightly
+gh api repos/pingdotgg/t3code/releases/tags/v<version> --jq '.assets[].name' | grep linux-x64
+
+# hash is the FILE hash (fetchurl, no --unpack):
+nix store prefetch-file --json https://github.com/pingdotgg/t3code/releases/download/v<version>/t3-<version>-linux-x64.tar.gz
+
+# update version+hash, then verify — the archive's `t3 --version` must match:
+nix build .#t3 --no-link --print-out-paths
+nix build .#t3-nightly --no-link --print-out-paths
+"$(nix build .#t3-nightly --no-link --print-out-paths | tail -1)/bin/t3" --version
+```
+
+Notes:
+- `t3-unwrapped.nix` sets `dontStrip = true` and does **not** run
+  `autoPatchelfHook`; see the Node SEA pitfall below.
+- Stable and nightly share `pkgs/t3.nix` (both expose the harness
+  `enable*` flags). `t3-nightly.nix` is a three-line `callPackage` with its
+  own pin.
+- `t3-unwrapped` must **not** be added to the overlay: `callPackage` would
+  auto-supply it and silently override the version-specific default
+  (`t3-nightly` would then build the stable binary). Use
+  `pkgs.t3.passthru.unwrapped` / `pkgs.t3-nightly.passthru.unwrapped` if you
+  need the raw binary.
 
 ## Flake and overlays
 
 After any `pkgs/*.nix` change:
 
 ```bash
-git add pkgs/<pkg>.nix t3-lock/* flake.nix   # if flake.nix overlay list changed
+git add pkgs/<pkg>.nix flake.nix   # if flake.nix overlay list changed
 nix flake check --no-build 2>&1 | head -n 100
 nix build .#<pkg> --no-link   # sanity
 ```
@@ -223,7 +246,7 @@ For packages gated on `lib.optionalAttrs stdenv.isLinux` (like `terminal-browser
 ## Commit / push
 
 ```bash
-git add pkgs/*.nix t3-lock/ flake.nix .agents/skills/update-packages/SKILL.md
+git add pkgs/*.nix flake.nix .agents/skills/update-packages/SKILL.md
 git commit -m "chore: bump <pkg> to <version> (update <hash> + <vendorHash|cargoHash|npmDepsHash|outputHash>)"
 git push origin main
 # no need to update /etc/nixos flake.lock – skill is internal-only per request
@@ -231,19 +254,40 @@ git push origin main
 
 ## Pitfalls
 
-- FODs (`fkill`, `hf`, `ocrmypdf`, `t3-nightly-unwrapped` via `buildNpmPackage`'s `fetchNpmDeps`) must have `outputHash`/`npmDepsHash` updated via fakeHash workflow; they are allowed network at build time only because hash is fixed.
+- **`fetchurl` hash type**: `nix store prefetch-file --unpack` returns the
+  *unpacked tree* hash (`fetchzip`/`fetchFromGitHub`). Plain `fetchurl` of a
+  tarball needs the file hash — omit `--unpack`. Wrong choice shows up as
+  `specified: sha256-X / got: sha256-Y` with a `got` you never prefetched.
+- **Node SEA binaries (t3): SIGILL is not a CPU/AVX2 problem.** t3 ships a
+  Node single-executable-application: the node executable with the app blob
+  appended. Nix's fixup phase strips ELF files by default, which corrupts the
+  blob, and the process dies with `Illegal instruction (core dumped)` before
+  `main()`. `patchelf` on it is equally fatal. Fix: `dontStrip = true`, no
+  `autoPatchelfHook`, and inject runtime libs through the wrapper
+  (`--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ stdenv.cc.cc.lib ]}`).
+  Confirm with `readelf -n <binary>`: no `.note.gnu.property` ISA note means
+  the binary requires nothing beyond baseline x86-64, so do not chase AVX2.
+- FODs (`fkill`, `hf`, `ocrmypdf`) must have `outputHash` updated via the
+  fakeHash workflow; they are allowed network at build time only because the
+  hash is fixed.
 - FOD `$out` must not contain store references (no venvs, no symlinks to `/nix/store`, no absolute shebangs/scripts) — Nix errors with "fixed-output derivations must not reference store paths", and `$out`-embedding content can never converge since the FOD output path derives from `outputHash`. `discord-cli.nix` pattern: FOD installs to `--target` with `bin/` removed, plain derivation provides the launcher.
 - Go `vendorHash` changes on any dep bump – always refresh after `rev` change.
 - Rust `cargoHash` changes on `Cargo.lock` change.
-- `t3-lock` must be committed – `buildNpmPackage` uses `src = ../t3-lock`; if lockfile is stale, `npmDepsHash` will mismatch.
+- Never re-add `t3-lock/`; the t3 packages fetch the release archive directly.
 - For `nixpkgs` master, `isLinux`/`isDarwin` deprecations warn – prefer `stdenv.hostPlatform.isLinux`.
 - When a new package is added, update this skill's "Known package types" table and the discovery table if it introduces a new builder/fetcher pattern.
 
-## Verify latest nightly (as of skill write)
+## Verify latest t3 (as of last update: 2026-10-21)
 
 ```bash
 npm view t3 dist-tags --json
-# {"alpha":"0.0.2","latest":"0.0.33","nightly":"0.0.34-nightly.20260825.1185"}
+# {"alpha":"0.0.2","latest":"0.1.1","nightly":"0.1.2-nightly.20261021.3457","preview":"0.1.1-preview.20261021.3449"}
+gh api repos/pingdotgg/t3code/releases --jq '.[] | .tag_name' | head -5
 ```
 
-This skill was authored 2026-08-25 – re-check `npm view t3@nightly` for newer nightly before using.
+Always confirm a `t3-<version>-linux-x64.tar.gz` asset exists for the version
+you pin (nightlies lag their npm publish by a few minutes, and some npm
+releases have no platform artifact at all).
+
+This skill was authored 2026-08-25 – re-check the dist-tags and release assets
+before bumping.
