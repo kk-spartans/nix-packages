@@ -225,6 +225,30 @@ in
       example = [ "--log-ws-events" ];
     };
 
+    enableFishIntegration = lib.mkOption {
+      type = lib.types.bool;
+      default = (config.programs.fish.enable or false);
+      description = ''
+        Install fish shell completions for the `t3` CLI.
+      '';
+    };
+
+    enableBashIntegration = lib.mkOption {
+      type = lib.types.bool;
+      default = (config.programs.bash.enable or false);
+      description = ''
+        Install bash shell completions for the `t3` CLI.
+      '';
+    };
+
+    enableZshIntegration = lib.mkOption {
+      type = lib.types.bool;
+      default = (config.programs.zsh.enable or false);
+      description = ''
+        Install zsh shell completions for the `t3` CLI.
+      '';
+    };
+
     tailscale = {
       enable = lib.mkEnableOption ''
         Tailscale integration: waits for tailscaled before starting and puts
@@ -332,7 +356,35 @@ in
         extremely slow software emulation (or fails to start).
       '';
 
-    home.packages = lib.mkIf cfg.deviceHub [ pkgs.androidsdk ];
+    home.packages = lib.mkIf cfg.enable [ cfg.package ] ++ lib.mkIf cfg.deviceHub [ pkgs.androidsdk ];
+
+    # Shell completions for the `t3` CLI.
+    xdg.configFile = lib.listToAttrs (
+      lib.optionals cfg.enableFishIntegration [
+        {
+          name = "fish/completions/t3.fish";
+          value = pkgs.runCommand "t3-fish-completion" { buildInputs = [ t3Package ]; } ''
+            ${t3Package}/bin/t3 --completions fish > $out
+          '';
+        }
+      ]
+      ++ lib.optionals cfg.enableBashIntegration [
+        {
+          name = "bash/completions/t3";
+          value = pkgs.runCommand "t3-bash-completion" { buildInputs = [ t3Package ]; } ''
+            ${t3Package}/bin/t3 --completions bash > $out
+          '';
+        }
+      ]
+      ++ lib.optionals cfg.enableZshIntegration [
+        {
+          name = "zsh/completions/_t3";
+          value = pkgs.runCommand "t3-zsh-completion" { buildInputs = [ t3Package ]; } ''
+            ${t3Package}/bin/t3 --completions zsh > $out
+          '';
+        }
+      ]
+    );
 
     home.sessionVariables = lib.mkIf cfg.deviceHub {
       ANDROID_HOME = "${androidSdk}";

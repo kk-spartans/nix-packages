@@ -18,7 +18,7 @@ All of them live under `inputs.nix-packages.homeManagerModules`.
 
 ### `services.t3-server`
 
-Headless T3 Code server (`t3 serve`) as a systemd user service, with tailscale support.
+Headless T3 Code server (`t3 serve`) as a systemd user service, with tailscale support. Installs the `t3` CLI and optionally generates shell completions.
 
 ```nix
 # flake input: nix-packages
@@ -28,11 +28,13 @@ services.t3-server = {
   enable = true;
   harnesses.enableClaude = true; # extra agent CLIs on PATH (codex/git/gh are on by default)
   tailscale.enable = true;       # wait for tailscaled, expose via `tailscale serve`
+  enableFishIntegration = true;  # install fish completions for `t3`
 };
 ```
 
 - `tailscale.serve` (default when tailscale is enabled): publishes the server over HTTPS on the tailnet using t3's built-in `--tailscale-serve` flag. Needs your user to be a tailscale operator: `sudo tailscale set --operator <user>`.
 - `tailscale.bindIp`: alternative mode that binds straight to the tailnet IPv4 (plain HTTP over WireGuard).
+- `enableFishIntegration` / `enableBashIntegration` / `enableZshIntegration`: install `t3` shell completions for the given shell. Each defaults to `false`.
 - Pairing URL/token prints once on first start: `journalctl --user -u t3-server`. Mint more with `t3 pair`.
 - Survive logout: `sudo loginctl enable-linger <user>`.
 
@@ -56,21 +58,22 @@ programs.agent-browser.enable = true;
 
 Requires the `agent-skills` home-manager module; the skill is skipped when it is not imported.
 
-### `programs.spogo`, `programs.gogcli`, `programs.wacli`, `programs.t3`, `programs.hf`
+### `programs.spogo`, `programs.gogcli`, `programs.wacli`, `programs.hf`
 
-Each installs its CLI and optionally generates shell completions via `enableFishIntegration` (`fish`, `bash`, `zsh`, or `null`). Defaults to `fish` when `programs.fish.enable` is set, otherwise `null`.
+Each installs its CLI and optionally generates shell completions via `enableFishIntegration`, `enableBashIntegration`, `enableZshIntegration` (each a boolean, default `false`).
 
 ```nix
 imports = [
   inputs.nix-packages.homeManagerModules.spogo
   inputs.nix-packages.homeManagerModules.gogcli
   inputs.nix-packages.homeManagerModules.wacli
-  inputs.nix-packages.homeManagerModules.t3
   inputs.nix-packages.homeManagerModules.hf
 ];
 
 programs.spogo = {
   enable = true;
-  enableFishIntegration = "fish";
+  enableFishIntegration = true;
 };
 ```
+
+`programs.t3` has been removed: `t3` is installed and completed by `services.t3-server` instead.
