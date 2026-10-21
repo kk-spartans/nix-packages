@@ -360,35 +360,25 @@ in
       lib.optionals cfg.enable [ cfg.package ] ++ lib.optionals cfg.deviceHub [ pkgs.androidsdk ];
 
     # Shell completions for the `t3` CLI.
+    # Generated once (outside the Nix build sandbox — `t3 --completions` does
+    # not run reliably under the sandbox) and committed as static files.
     xdg.configFile = lib.listToAttrs (
       lib.optionals cfg.enableFishIntegration [
         {
           name = "fish/completions/t3.fish";
-          value = {
-            source = pkgs.runCommand "t3-fish-completion" { buildInputs = [ t3Package ]; } ''
-              ${t3Package}/bin/t3 --completions fish > $out
-            '';
-          };
+          value = { source = ./completions/t3.fish; };
         }
       ]
       ++ lib.optionals cfg.enableBashIntegration [
         {
           name = "bash/completions/t3";
-          value = {
-            source = pkgs.runCommand "t3-bash-completion" { buildInputs = [ t3Package ]; } ''
-              ${t3Package}/bin/t3 --completions bash > $out
-            '';
-          };
+          value = { source = ./completions/t3.bash; };
         }
       ]
       ++ lib.optionals cfg.enableZshIntegration [
         {
           name = "zsh/completions/_t3";
-          value = {
-            source = pkgs.runCommand "t3-zsh-completion" { buildInputs = [ t3Package ]; } ''
-              ${t3Package}/bin/t3 --completions zsh > $out
-            '';
-          };
+          value = { source = ./completions/_t3; };
         }
       ]
     );

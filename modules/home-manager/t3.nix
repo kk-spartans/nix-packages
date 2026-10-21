@@ -32,24 +32,12 @@ in
       home.packages = [ pkgs.t3 ];
     }
     // lib.mkIf (cfg.enableFishIntegration == "fish") {
-      xdg.configFile."fish/completions/t3.fish".source =
-        pkgs.runCommand "t3-fish-completion" { buildInputs = [ pkgs.t3 ]; }
-          ''
-            ${pkgs.t3}/bin/t3 --completions fish > $out
-          '';
+      xdg.configFile."fish/completions/t3.fish".source = ./completions/t3.fish;
     }
     // lib.mkIf (cfg.enableFishIntegration == "bash") {
-      xdg.configFile."bash/completions/t3".source =
-        pkgs.runCommand "t3-bash-completion" { buildInputs = [ pkgs.t3 ]; }
-          ''
-            ${pkgs.t3}/bin/t3 --completions bash > $out
-          '';
+      xdg.configFile."bash/completions/t3".source = ./completions/t3.bash;
     }
     // lib.mkIf (cfg.enableFishIntegration == "zsh") {
-      xdg.configFile."zsh/completions/_t3".source =
-        pkgs.runCommand "t3-zsh-completion" { buildInputs = [ pkgs.t3 ]; }
-          ''
-            ${pkgs.t3}/bin/t3 --completions zsh > $out
-          '';
+      xdg.configFile."zsh/completions/_t3".source = ./completions/_t3;
     };
 }
