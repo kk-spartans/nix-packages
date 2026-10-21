@@ -1,8 +1,29 @@
 # Custom nix packages
 
-Packages I made when there is no official nixpkgs package, or it's really outdated and uses a stack I don't like.
+Packages I made when there is no official nixpkgs package, or it's really
+outdated and uses a stack I don't like.
+
+## Updates
+
+`.github/workflows/update-packages.yml` runs every 6 hours: it bumps the nixpkgs
+input, updates **every** package and opens a PR.
+
+- GitHub-backed Go packages (`spogo`, `wacli`, `gogcli`, `discrawl`) follow the
+  default branch head (`--version branch`), not release tags.
+- GitHub tag/release tarballs (`tokscale`, `agent-browser`, `aw-watcher-lastfm`,
+  `terminal-browser`, `t3-unwrapped`, `t3-nightly-unwrapped`) are bumped from
+  their GitHub releases; `terminal-browser` refreshes both arch hashes.
+- npm tarballs (`fkill`, `portless`, `t1code`) and PyPI packages (`hf`,
+  `ocrmypdf`) publish their version + hashes through a `*-deps` fixed-output
+  derivation, which is what `nix-update` targets. `ocrmypdf` regenerates its
+  hashed `pkgs/ocrmypdf-requirements.txt` lock from `pkgs/ocrmypdf.in` first.
+
+The `*-deps` attributes exist only so the updater has a normal derivation to
+evaluate; the user-facing packages are the launchers next to them.
 
 ## Home Manager modules
+
+All of them live under `inputs.nix-packages.homeManagerModules`.
 
 ### `services.t3-server`
 
@@ -24,25 +45,35 @@ services.t3-server = {
 - Pairing URL/token prints once on first start: `journalctl --user -u t3-server`. Mint more with `t3 pair`.
 - Survive logout: `sudo loginctl enable-linger <user>`.
 
-### `programs.terminal-agent-browser`
+### `services.wacli-sync`
 
-Per-herdr-tab agent control for terminal-browser (`terminal-agent-browser`
-wrapper + skill). Agents and terminal-browser panes in the same herdr tab
-share one agent-browser session; different tabs are isolated. Never shadows
-your own `agent-browser` install, and never downloads Chromium (always drives
-terminal-browser's Chromium over CDP).
+`wacli sync --follow` as a restart-always user service.
 
 ```nix
-# flake input: nix-packages
-imports = [ inputs.nix-packages.homeManagerModules.terminal-agent-browser ];
-
-programs.terminal-agent-browser = {
-  enable = true;
-  skill.enable = true; # install ~/.agents/skills/terminal-agent-browser/SKILL.md
-};
+imports = [ inputs.nix-packages.homeManagerModules.wacli-sync ];
+services.wacli-sync.enable = true;
 ```
 
-- Binary: `terminal-agent-browser <agent-browser args>` (e.g. `snapshot`, `click @e1`).
-- Open pages with `terminal-browser open`, list with `terminal-browser ls`.
-- Overrides: `TERMINAL_AGENT_BROWSER_SESSION`, `TERMINAL_BROWSER_KEY`, `TERMINAL_BROWSER_CDP_PORT`.
+### `programs.agent-browser`
 
+Installs `agent-browser` with a per-host wrapper (mac-pro: persistent Chrome
+over the tailnet; kk-spartans: local cloak container) and the upstream + local
+policy skills.
+
+```nix
+imports = [ inputs.nix-packages.homeManagerModules.agent-browser ];
+programs.agent-browser.enable = true;
+```
+
+Requires the `agent-skills` home-manager module; skills are skipped when it is
+not imported.
+
+### `programs.cli-completions`
+
+Generates fish completions for every CLI here that supports it (`spogo`,
+`wacli`, `gog`, `t3`, `hf`) into `~/.config/fish/completions`.
+
+```nix
+imports = [ inputs.nix-packages.homeManagerModules.completions ];
+programs.cli-completions.enable = true;
+```

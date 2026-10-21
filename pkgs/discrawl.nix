@@ -10,15 +10,15 @@ let
     }
   );
 in
-(pkgs.buildGoModule.override { inherit go; }) {
+(pkgs.buildGoModule.override { inherit go; }) rec {
   pname = "discrawl";
-  version = "unstable";
+  version = "0.16.0-unstable-2026-10-21";
 
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "discrawl";
-    rev = "bf709e1be4db407f914776fe2e6429464f77cc8f";
-    hash = "sha256-3AoyG6Wf4/T60TFdZQL0S/nn4ncdrWqylDpgefugrdg=";
+    rev = "6d670fc461f47be414b3c2a24e041657820195aa";
+    hash = "sha256-zixX5snqDEv5Noj5/GIvJ6qvYtfPnPk9IPH/4ZLANWo=";
   };
 
   subPackages = [ "cmd/discrawl" ];
@@ -26,5 +26,7 @@ in
 
   # Upstream resolves the version from this linker var and falls back to
   # "devel"; without it `discrawl --version` prints "devel".
-  ldflags = [ "-X github.com/openclaw/discrawl/internal/cli.version=unstable-bf709e1" ];
+  ldflags = [
+    "-X github.com/openclaw/discrawl/internal/cli.version=${version}"
+  ];
 }

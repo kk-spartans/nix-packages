@@ -1,0 +1,125 @@
+name: update-packages
+
+on:
+  schedule:
+    # every 6 hours
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-packages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+
+      - name: Update nixpkgs input
+        run: nix flake update
+
+      - name: Update packages
+        run: |
+          set -uo pipefail
+
+          report="$RUNNER_TEMP/report.md"
+          {
+            echo "## Automated package update"
+            echo
+            echo '```'
+          } > "$report"
+
+          nix-update() {
+            echo "\$ nix run nixpkgs#nix-update -- $*"
+            nix run nixpkgs#nix-update -- "$@" 2>&1 || echo "!! failed: $*"
+          }
+
+          latest_npm() { curl -fsSL "https://registry.npmjs.org/$1/latest" | jq -r .version; }
+          latest_pypi() { curl -fsSL "https://pypi.org/pypi/$1/json" | jq -r .info.version; }
+
+          # GitHub-backed Go packages: follow the default branch head so the
+          # pinned rev is always the latest commit, not the latest tag.
+          for p in spogo wacli gogcli discrawl; do
+            nix-update --flake "$p" --version branch --build
+          done
+
+          # Versioned GitHub tarballs (tag is part of the src URL).
+          for p in tokscale agent-browser aw-watcher-lastfm; do
+            nix-update --flake "$p" --build
+          done
+
+          # Release archives behind custom attrs.
+          nix-update --flake t3-unwrapped --use-github-releases --build
+
+          nightly=$(curl -fsSL "https://api.github.com/repos/pingdotgg/t3code/releases?per_page=30" \
+            | jq -r '[.[] | select(.tag_name | test("nightly"))][0].tag_name' \
+            | sed 's/^v//')
+          if [ -n "$nightly" ] && [ "$nightly" != "null" ]; then
+            nix-update --flake t3-nightly-unwrapped --version "$nightly" --build
+          fi
+
+          # Per-arch binary release: refresh the hash for both architectures.
+          nix-update --flake terminal-browser --build
+          nix-update --flake terminal-browser --system aarch64-linux
+
+          # npm tarballs: the *-deps FOD owns version + src hash + outputHash.
+          for spec in fkill:fkill-cli portless:portless t1code:@maria_rcks/t1code; do
+            attr="${spec%%:*}"
+            pkg="${spec#*:}"
+            v=$(latest_npm "$pkg")
+            [ -n "$v" ] && [ "$v" != "null" ] && nix-update --flake "$attr-deps" --version "$v" --build
+          done
+
+          # PyPI: hf pins hf + huggingface-hub to the same version.
+          v=$(latest_pypi hf)
+          [ -n "$v" ] && [ "$v" != "null" ] && nix-update --flake hf-deps --version "$v" --build
+
+          # ocrmypdf: regenerate the hashed lock first, then let nix-update move
+          # the version and the FOD hash.
+          v=$(latest_pypi ocrmypdf)
+          if [ -n "$v" ] && [ "$v" != "null" ]; then
+            sed -i "s/^ocrmypdf==.*/ocrmypdf==$v/" pkgs/ocrmypdf.in
+            nix run nixpkgs#uv -- pip compile \
+              --python-version 3.12 \
+              --python-platform x86_64-unknown-linux-gnu \
+              --index-strategy unsafe-best-match \
+              --only-binary :all: \
+              --generate-hashes \
+              --extra-index-url https://download.pytorch.org/whl/cu124 \
+              -o pkgs/ocrmypdf-requirements.txt \
+              pkgs/ocrmypdf.in
+            nix-update --flake ocrmypdf-deps --version "$v" --build
+          fi
+
+          echo '```' >> "$report"
+          echo >> "$report"
+          echo "Every package in this flake is covered by the steps above." >> "$report"
+          cat "$report" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check flake
+        run: nix flake check --no-build
+
+      - name: Open / update pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: automation/update-packages
+          delete-branch: true
+          title: "chore: update packages"
+          commit-message: "chore: update packages"
+          body-path: ${{ runner.temp }}/report.md
+          add-paths: |
+            flake.lock
+            flake.nix
+            pkgs

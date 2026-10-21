@@ -4,8 +4,6 @@
   symlinkJoin,
   makeBinaryWrapper,
   pname ? "t3",
-  t3Version ? "0.1.1",
-  t3Hash ? "sha256-M8Q+ovgDIVZi9aMf354byoarZ8rE8jmFZcK6EuF8IYU=",
   enableAzureDevOps ? false,
   azure-cli,
   azure-cli-extensions,
@@ -13,7 +11,7 @@
   bitbucket-cli,
   enableClaude ? false,
   claude-code,
-  enableCodex ? true,
+  enableCodex ? false,
   codex,
   enableCursor ? false,
   code-cursor,
@@ -30,10 +28,7 @@
   enableOpencode ? false,
   opencode,
   enableResourceMonitor ? false,
-  t3-unwrapped ? callPackage ./t3-unwrapped.nix {
-    version = t3Version;
-    hash = t3Hash;
-  },
+  t3-unwrapped ? callPackage ./t3-unwrapped.nix { },
 }:
 
 let
