@@ -21,15 +21,15 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.hf ];
-
-    config = lib.mkIf (cfg.enableFishIntegration == "fish") {
+  config =
+    lib.mkIf cfg.enable {
+      home.packages = [ pkgs.hf ];
+    }
+    // lib.mkIf (cfg.enableFishIntegration == "fish") {
       xdg.configFile."fish/completions/hf.fish".source =
         pkgs.runCommand "hf-fish-completion" { buildInputs = [ pkgs.hf ]; }
           ''
             ${pkgs.hf}/bin/hf --show-completion fish > $out
           '';
     };
-  };
 }

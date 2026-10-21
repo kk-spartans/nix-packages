@@ -27,31 +27,29 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.t3 ];
-
-    config = lib.mkIf (cfg.enableFishIntegration == "fish") {
+  config =
+    lib.mkIf cfg.enable {
+      home.packages = [ pkgs.t3 ];
+    }
+    // lib.mkIf (cfg.enableFishIntegration == "fish") {
       xdg.configFile."fish/completions/t3.fish".source =
         pkgs.runCommand "t3-fish-completion" { buildInputs = [ pkgs.t3 ]; }
           ''
             ${pkgs.t3}/bin/t3 --completions fish > $out
           '';
-    };
-
-    config = lib.mkIf (cfg.enableFishIntegration == "bash") {
+    }
+    // lib.mkIf (cfg.enableFishIntegration == "bash") {
       xdg.configFile."bash/completions/t3".source =
         pkgs.runCommand "t3-bash-completion" { buildInputs = [ pkgs.t3 ]; }
           ''
             ${pkgs.t3}/bin/t3 --completions bash > $out
           '';
-    };
-
-    config = lib.mkIf (cfg.enableFishIntegration == "zsh") {
+    }
+    // lib.mkIf (cfg.enableFishIntegration == "zsh") {
       xdg.configFile."zsh/completions/_t3".source =
         pkgs.runCommand "t3-zsh-completion" { buildInputs = [ pkgs.t3 ]; }
           ''
             ${pkgs.t3}/bin/t3 --completions zsh > $out
           '';
     };
-  };
 }
