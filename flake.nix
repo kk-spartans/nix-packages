@@ -91,6 +91,7 @@
         }
         // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           inherit (pkgs) terminal-browser;
+          terminal-browser-aarch64 = pkgs.callPackage ./pkgs/terminal-browser-aarch64.nix { };
         }
         // pkgs.lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.hostPlatform.isx86_64) {
           inherit (pkgs) t1code;

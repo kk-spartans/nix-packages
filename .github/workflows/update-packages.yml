@@ -70,9 +70,16 @@ jobs:
             nix-update --flake t3-nightly-unwrapped --version "$nightly" --build
           fi
 
-          # Per-arch binary release: refresh the hash for both architectures.
-          nix-update --flake terminal-browser --build
-          nix-update --flake terminal-browser --system aarch64-linux
+          # Per-arch binary release. The repo also tags other products
+          # (pixel-v*, electron-*), so pick the newest plain vX.Y.Z tag and
+          # pass it explicitly to both arch pins.
+          tb=$(curl -fsSL "https://api.github.com/repos/zenbu-labs/terminal-browser/releases?per_page=40" \
+            | jq -r '[.[] | select(.tag_name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))][0].tag_name' \
+            | sed 's/^v//')
+          if [ -n "$tb" ] && [ "$tb" != "null" ]; then
+            nix-update --flake terminal-browser --version "$tb" --build
+            nix-update --flake terminal-browser-aarch64 --version "$tb"
+          fi
 
           # npm tarballs: the *-deps FOD owns version + src hash + outputHash.
           for spec in fkill:fkill-cli portless:portless t1code:@maria_rcks/t1code; do
