@@ -7,6 +7,8 @@
 let
   cfg = config.programs.t3;
   fishEnable = config.programs.fish.enable or false;
+
+  completion = shell: (import ./t3-completions.nix { inherit pkgs; }) pkgs.t3 shell;
 in
 {
   options.programs.t3 = {
@@ -32,12 +34,12 @@ in
       home.packages = [ pkgs.t3 ];
     }
     // lib.mkIf (cfg.enableFishIntegration == "fish") {
-      xdg.configFile."fish/completions/t3.fish".source = ./completions/t3.fish;
+      xdg.configFile."fish/completions/t3.fish".source = completion "fish";
     }
     // lib.mkIf (cfg.enableFishIntegration == "bash") {
-      xdg.configFile."bash/completions/t3".source = ./completions/t3.bash;
+      xdg.configFile."bash/completions/t3".source = completion "bash";
     }
     // lib.mkIf (cfg.enableFishIntegration == "zsh") {
-      xdg.configFile."zsh/completions/_t3".source = ./completions/_t3;
+      xdg.configFile."zsh/completions/_t3".source = completion "zsh";
     };
 }

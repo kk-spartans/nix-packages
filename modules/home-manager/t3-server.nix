@@ -34,6 +34,9 @@ let
 
   tailscaleEnabled = cfg.tailscale.enable;
 
+  # Build-time shell completions (see t3-completions.nix).
+  completion = shell: (import ./t3-completions.nix { inherit pkgs; }) t3Package shell;
+
   # t3's device hub (LocalDeviceHost.androidSdk) resolves the SDK root from
   # ANDROID_HOME / ANDROID_SDK_ROOT, then requires `platform-tools/adb`,
   # `emulator/emulator` and `cmdline-tools/latest/bin/avdmanager` to exist
@@ -359,26 +362,31 @@ in
     home.packages =
       lib.optionals cfg.enable [ cfg.package ] ++ lib.optionals cfg.deviceHub [ pkgs.androidsdk ];
 
-    # Shell completions for the `t3` CLI.
-    # Generated once (outside the Nix build sandbox — `t3 --completions` does
-    # not run reliably under the sandbox) and committed as static files.
+    # Shell completions for the `t3` CLI, generated from the installed binary
+    # at build time.
     xdg.configFile = lib.listToAttrs (
       lib.optionals cfg.enableFishIntegration [
         {
           name = "fish/completions/t3.fish";
-          value = { source = ./completions/t3.fish; };
+          value = {
+            source = completion "fish";
+          };
         }
       ]
       ++ lib.optionals cfg.enableBashIntegration [
         {
           name = "bash/completions/t3";
-          value = { source = ./completions/t3.bash; };
+          value = {
+            source = completion "bash";
+          };
         }
       ]
       ++ lib.optionals cfg.enableZshIntegration [
         {
           name = "zsh/completions/_t3";
-          value = { source = ./completions/_t3; };
+          value = {
+            source = completion "zsh";
+          };
         }
       ]
     );
