@@ -1,13 +1,13 @@
 { pkgs }:
 pkgs.buildGoModule rec {
   pname = "spogo";
-  version = "0.13.2-unstable-2026-10-21";
+  version = "0.13.2-unstable-2026-10-22";
 
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "spogo";
-    rev = "be23d8b2023b100f1b87e4d5672e36a6b72f45bb";
-    hash = "sha256-snyUl0isNVn5PenluBOwI+CWeOhK/WGocuiY19f0w2M=";
+    rev = "61001a475be735fcfbdb5f96448bd3988caad31c";
+    hash = "sha256-BJ1bAG6XUbPo8bOZk1pWZeOK73jJxXLLfEWAicQrn28=";
   };
 
   subPackages = [ "cmd/spogo" ];

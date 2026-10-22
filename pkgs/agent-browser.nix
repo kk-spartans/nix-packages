@@ -1,11 +1,11 @@
 { pkgs }:
 pkgs.rustPlatform.buildRustPackage rec {
   pname = "agent-browser";
-  version = "0.39.1";
+  version = "0.39.2";
 
   src = pkgs.fetchurl {
     url = "https://github.com/vercel-labs/agent-browser/archive/v${version}.tar.gz";
-    hash = "sha256-G4rg/UaQgQEsLq1KpuWHAzvrQPsNbQBefOwczZR09Wc=";
+    hash = "sha256-D+E7foLYHfhbYpz+lSKf5+zFtK0UscPfe6VuBVIW07w=";
   };
 
   buildAndTestSubdir = "cli";
@@ -13,7 +13,7 @@ pkgs.rustPlatform.buildRustPackage rec {
 
   doCheck = false;
 
-  cargoHash = "sha256-f+7fTDs/irnf/6jCmSlSKaIaVAuqmTvjhW/vBT5gBKM=";
+  cargoHash = "sha256-FprEr8LMwr/QLXNSUCi0xSDTGLWknPYlFwkBIT4tUdg=";
 
   nativeBuildInputs = with pkgs; [ makeWrapper ];
 
