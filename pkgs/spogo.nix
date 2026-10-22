@@ -16,4 +16,6 @@ pkgs.buildGoModule rec {
   # Upstream defaults `version` to "dev"; without this `--version` prints
   # "dev" regardless of the pinned rev.
   ldflags = [ "-X github.com/steipete/spogo/internal/cli.version=${version}" ];
+
+  meta.mainProgram = "spogo";
 }
