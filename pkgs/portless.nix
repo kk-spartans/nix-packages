@@ -23,8 +23,8 @@ pkgs.stdenv.mkDerivation {
   installPhase = "true";
 
   meta = {
-    description = "Portless: local HTTPS for development";
-    homepage = "https://github.com/bcomnes/portless";
+    description = "Replace port numbers with stable, named .localhost URLs";
+    homepage = "https://github.com/vercel-labs/portless";
     license = pkgs.lib.licenses.mit;
     mainProgram = "portless";
   };
