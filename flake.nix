@@ -55,7 +55,6 @@
         agent-browser = import ./modules/home-manager/agent-browser.nix;
         spogo = import ./modules/home-manager/spogo.nix;
         gogcli = import ./modules/home-manager/gogcli.nix;
-        wacli = import ./modules/home-manager/wacli.nix;
         t3 = import ./modules/home-manager/t3.nix;
         hf = import ./modules/home-manager/hf.nix;
       };

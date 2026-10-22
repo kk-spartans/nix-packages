@@ -363,21 +363,15 @@ in
       lib.optionals cfg.enable [ cfg.package ] ++ lib.optionals cfg.deviceHub [ pkgs.androidsdk ];
 
     # Shell completions for the `t3` CLI, generated from the installed binary
-    # at build time.
+    # at build time. fish and zsh read their config dirs; bash-completion only
+    # picks up its user dir under $XDG_DATA_HOME, and zsh needs the dir on
+    # $fpath.
     xdg.configFile = lib.listToAttrs (
       lib.optionals cfg.enableFishIntegration [
         {
           name = "fish/completions/t3.fish";
           value = {
             source = completion "fish";
-          };
-        }
-      ]
-      ++ lib.optionals cfg.enableBashIntegration [
-        {
-          name = "bash/completions/t3";
-          value = {
-            source = completion "bash";
           };
         }
       ]
@@ -390,6 +384,21 @@ in
         }
       ]
     );
+
+    xdg.dataFile = lib.listToAttrs (
+      lib.optionals cfg.enableBashIntegration [
+        {
+          name = "bash-completion/completions/t3";
+          value = {
+            source = completion "bash";
+          };
+        }
+      ]
+    );
+
+    programs.zsh.initContent = lib.mkIf cfg.enableZshIntegration ''
+      fpath+=(${config.xdg.configHome}/zsh/completions)
+    '';
 
     home.sessionVariables = lib.mkIf cfg.deviceHub {
       ANDROID_HOME = "${androidSdk}";

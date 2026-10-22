@@ -6,9 +6,10 @@
 }:
 let
   cfg = config.programs.hf;
-  fishEnable = config.programs.fish.enable or false;
-  bashEnable = config.programs.bash.enable or false;
-  zshEnable = config.programs.zsh.enable or false;
+
+  completion = shell: pkgs.runCommand "hf-${shell}-completion" { } ''
+    ${lib.getExe pkgs.hf} --show-completion ${shell} > $out
+  '';
 in
 {
   options.programs.hf = {
@@ -16,52 +17,44 @@ in
 
     enableFishIntegration = lib.mkOption {
       type = lib.types.bool;
-      default = fishEnable;
-      description = ''
-        Install shell completions for fish.
-      '';
+      default = config.programs.fish.enable;
+      defaultText = lib.literalExpression "config.programs.fish.enable";
+      description = "Install fish shell completions for `hf`.";
     };
 
     enableBashIntegration = lib.mkOption {
       type = lib.types.bool;
-      default = bashEnable;
-      description = ''
-        Install shell completions for bash.
-      '';
+      default = config.programs.bash.enable;
+      defaultText = lib.literalExpression "config.programs.bash.enable";
+      description = "Install bash shell completions for `hf`.";
     };
 
     enableZshIntegration = lib.mkOption {
       type = lib.types.bool;
-      default = zshEnable;
-      description = ''
-        Install shell completions for zsh.
-      '';
+      default = config.programs.zsh.enable;
+      defaultText = lib.literalExpression "config.programs.zsh.enable";
+      description = "Install zsh shell completions for `hf`.";
     };
   };
 
-  config =
-    lib.mkIf cfg.enable {
+  config = lib.mkMerge [
+    (lib.mkIf cfg.enable {
       home.packages = [ pkgs.hf ];
-    }
-    // lib.mkIf (cfg.enable && cfg.enableFishIntegration) {
-      xdg.configFile."fish/completions/hf.fish".source =
-        pkgs.runCommand "hf-fish-completion" { buildInputs = [ pkgs.hf ]; }
-          ''
-            ${pkgs.hf}/bin/hf --show-completion fish > $out
-          '';
-    }
-    // lib.mkIf (cfg.enable && cfg.enableBashIntegration) {
-      xdg.configFile."bash/completions/hf".source =
-        pkgs.runCommand "hf-bash-completion" { buildInputs = [ pkgs.hf ]; }
-          ''
-            ${pkgs.hf}/bin/hf --show-completion bash > $out
-          '';
-    }
-    // lib.mkIf (cfg.enable && cfg.enableZshIntegration) {
-      xdg.configFile."zsh/completions/_hf".source =
-        pkgs.runCommand "hf-zsh-completion" { buildInputs = [ pkgs.hf ]; }
-          ''
-            ${pkgs.hf}/bin/hf --show-completion zsh > $out
-          '';
-    };
+    })
+
+    (lib.mkIf (cfg.enable && cfg.enableFishIntegration) {
+      xdg.configFile."fish/completions/hf.fish".source = completion "fish";
+    })
+
+    (lib.mkIf (cfg.enable && cfg.enableBashIntegration) {
+      xdg.dataFile."bash-completion/completions/hf".source = completion "bash";
+    })
+
+    (lib.mkIf (cfg.enable && cfg.enableZshIntegration) {
+      xdg.configFile."zsh/completions/_hf".source = completion "zsh";
+      programs.zsh.initContent = lib.mkAfter ''
+        fpath+=(${config.xdg.configHome}/zsh/completions)
+      '';
+    })
+  ];
 }

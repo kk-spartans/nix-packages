@@ -6,9 +6,10 @@
 }:
 let
   cfg = config.programs.spogo;
-  fishEnable = config.programs.fish.enable or false;
-  bashEnable = config.programs.bash.enable or false;
-  zshEnable = config.programs.zsh.enable or false;
+
+  completion = shell: pkgs.runCommand "spogo-${shell}-completion" { } ''
+    ${lib.getExe pkgs.spogo} completion ${shell} > $out
+  '';
 in
 {
   options.programs.spogo = {
@@ -16,52 +17,44 @@ in
 
     enableFishIntegration = lib.mkOption {
       type = lib.types.bool;
-      default = fishEnable;
-      description = ''
-        Install shell completions for fish.
-      '';
+      default = config.programs.fish.enable;
+      defaultText = lib.literalExpression "config.programs.fish.enable";
+      description = "Install fish shell completions for `spogo`.";
     };
 
     enableBashIntegration = lib.mkOption {
       type = lib.types.bool;
-      default = bashEnable;
-      description = ''
-        Install shell completions for bash.
-      '';
+      default = config.programs.bash.enable;
+      defaultText = lib.literalExpression "config.programs.bash.enable";
+      description = "Install bash shell completions for `spogo`.";
     };
 
     enableZshIntegration = lib.mkOption {
       type = lib.types.bool;
-      default = zshEnable;
-      description = ''
-        Install shell completions for zsh.
-      '';
+      default = config.programs.zsh.enable;
+      defaultText = lib.literalExpression "config.programs.zsh.enable";
+      description = "Install zsh shell completions for `spogo`.";
     };
   };
 
-  config =
-    lib.mkIf cfg.enable {
+  config = lib.mkMerge [
+    (lib.mkIf cfg.enable {
       home.packages = [ pkgs.spogo ];
-    }
-    // lib.mkIf (cfg.enable && cfg.enableFishIntegration) {
-      xdg.configFile."fish/completions/spogo.fish".source =
-        pkgs.runCommand "spogo-fish-completion" { buildInputs = [ pkgs.spogo ]; }
-          ''
-            ${pkgs.spogo}/bin/spogo completion fish > $out
-          '';
-    }
-    // lib.mkIf (cfg.enable && cfg.enableBashIntegration) {
-      xdg.configFile."bash/completions/spogo".source =
-        pkgs.runCommand "spogo-bash-completion" { buildInputs = [ pkgs.spogo ]; }
-          ''
-            ${pkgs.spogo}/bin/spogo completion bash > $out
-          '';
-    }
-    // lib.mkIf (cfg.enable && cfg.enableZshIntegration) {
-      xdg.configFile."zsh/completions/_spogo".source =
-        pkgs.runCommand "spogo-zsh-completion" { buildInputs = [ pkgs.spogo ]; }
-          ''
-            ${pkgs.spogo}/bin/spogo completion zsh > $out
-          '';
-    };
+    })
+
+    (lib.mkIf (cfg.enable && cfg.enableFishIntegration) {
+      xdg.configFile."fish/completions/spogo.fish".source = completion "fish";
+    })
+
+    (lib.mkIf (cfg.enable && cfg.enableBashIntegration) {
+      xdg.dataFile."bash-completion/completions/spogo".source = completion "bash";
+    })
+
+    (lib.mkIf (cfg.enable && cfg.enableZshIntegration) {
+      xdg.configFile."zsh/completions/_spogo".source = completion "zsh";
+      programs.zsh.initContent = lib.mkAfter ''
+        fpath+=(${config.xdg.configHome}/zsh/completions)
+      '';
+    })
+  ];
 }

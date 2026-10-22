@@ -34,18 +34,26 @@ services.t3-server = {
 
 - `tailscale.serve` (default when tailscale is enabled): publishes the server over HTTPS on the tailnet using t3's built-in `--tailscale-serve` flag. Needs your user to be a tailscale operator: `sudo tailscale set --operator <user>`.
 - `tailscale.bindIp`: alternative mode that binds straight to the tailnet IPv4 (plain HTTP over WireGuard).
-- `enableFishIntegration` / `enableBashIntegration` / `enableZshIntegration`: install `t3` shell completions for the given shell. Each defaults to `false`.
+- `enableFishIntegration` / `enableBashIntegration` / `enableZshIntegration`: install `t3` shell completions for the given shell. Each defaults to `programs.fish.enable` / `programs.bash.enable` / `programs.zsh.enable`.
 - Pairing URL/token prints once on first start: `journalctl --user -u t3-server`. Mint more with `t3 pair`.
 - Survive logout: `sudo loginctl enable-linger <user>`.
 
 ### `services.wacli-sync`
 
-`wacli sync --follow` as a restart-always user service.
+Installs the `wacli` WhatsApp CLI (into `home.packages`) and runs `wacli sync --follow` as a restart-always user service, with optional shell completions.
 
 ```nix
 imports = [ inputs.nix-packages.homeManagerModules.wacli-sync ];
-services.wacli-sync.enable = true;
+
+services.wacli-sync = {
+  enable = true;               # installs wacli + the sync service
+  enableFishIntegration = true; # defaults to programs.fish.enable
+};
 ```
+
+- `package`: wacli package to install/run (default `pkgs.wacli`).
+- `downloadMedia` (default `true`) and `extraArgs`: passed to `wacli sync --follow`.
+- `enableFishIntegration` / `enableBashIntegration` / `enableZshIntegration`: install `wacli` completions for the given shell, defaulting to `programs.fish.enable` / `programs.bash.enable` / `programs.zsh.enable` like other home-manager modules.
 
 ### `programs.agent-browser`
 
@@ -58,15 +66,14 @@ programs.agent-browser.enable = true;
 
 Requires the `agent-skills` home-manager module; the skill is skipped when it is not imported.
 
-### `programs.spogo`, `programs.gogcli`, `programs.wacli`, `programs.hf`
+### `programs.spogo`, `programs.gogcli`, `programs.hf`
 
-Each installs its CLI and optionally generates shell completions via `enableFishIntegration`, `enableBashIntegration`, `enableZshIntegration` (each a boolean, default `false`).
+Each installs its CLI and optionally generates shell completions via `enableFishIntegration`, `enableBashIntegration`, `enableZshIntegration`. Each defaults to the matching home-manager global: `programs.fish.enable`, `programs.bash.enable`, `programs.zsh.enable`.
 
 ```nix
 imports = [
   inputs.nix-packages.homeManagerModules.spogo
   inputs.nix-packages.homeManagerModules.gogcli
-  inputs.nix-packages.homeManagerModules.wacli
   inputs.nix-packages.homeManagerModules.hf
 ];
 

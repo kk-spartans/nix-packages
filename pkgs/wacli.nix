@@ -19,4 +19,6 @@
     $out/bin/wacli completion fish > wacli.fish
     installShellCompletion --fish --name wacli.fish wacli.fish
   '';
+
+  meta.mainProgram = "wacli";
 }
