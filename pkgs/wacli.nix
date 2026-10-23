@@ -6,12 +6,12 @@
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "wacli";
-    rev = "6710b4b6b54696c1b90597f40f4cd747901bd9f7";
-    hash = "sha256-5jIFvp71R6eefOpflQJ4dWAqOz2f7HYqgt3bPEN3JVE=";
+    rev = "5578d1b6892f50a8f2329b11a6b6e27a1a81f88b";
+    hash = "sha256-yr3wEjg8uZvdtOkkKdwMrnXjb/MLNMXh8ZODOp1PAX4=";
   };
 
   subPackages = [ "cmd/wacli" ];
-  vendorHash = "sha256-Kcbd/If+63q4TRifEH3iZ+Doc5sF10MQLViBhsr0buE=";
+  vendorHash = "sha256-hZLUFdXreQyI6rZcKvQWN5Vi628jlEk65+Mcvlj9K34=";
 
   nativeBuildInputs = [ pkgs.installShellFiles ];
 
