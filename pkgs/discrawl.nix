@@ -12,13 +12,13 @@ let
 in
 (pkgs.buildGoModule.override { inherit go; }) rec {
   pname = "discrawl";
-  version = "0.16.0-unstable-2026-10-22";
+  version = "0.16.0-unstable-2026-10-23";
 
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "discrawl";
-    rev = "6d23bc9a928666c01965fd20da6aa25800f3fc85";
-    hash = "sha256-a3XXiH8UKLlMK6w2gAdKzA1jdf7x6cHkNK6O/x6vw/s=";
+    rev = "dcca8a4c399ad6d33092566e031e7a95ad259956";
+    hash = "sha256-Lb1r7Ze8tbnBABPOWvIZT9Mu7mSL7kVuhngObYLvrHk=";
   };
 
   subPackages = [ "cmd/discrawl" ];
