@@ -6,8 +6,8 @@ pkgs.buildGoModule rec {
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "gogcli";
-    rev = "f9052a583e87637894b72199b9dc2b47cfa7f37a";
-    hash = "sha256-igKafkCAEumVqNLrvpERGpCypo3kcDFtHjUPZGWlQBw=";
+    rev = "f7dab31f4249cb4f275dff81e2f840d6c626bf39";
+    hash = "sha256-IQq1fOEtPWaGVCoYiKEfhNUz5kaGgOjAr/7GwiGZnlg=";
   };
 
   subPackages = [ "cmd/gog" ];
