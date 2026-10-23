@@ -1,6 +1,6 @@
 { pkgs }:
 let
-  version = "2.2.0";
+  version = "2.3.0";
 in
 pkgs.stdenv.mkDerivation {
   pname = "hf-deps";
@@ -36,5 +36,5 @@ pkgs.stdenv.mkDerivation {
   installPhase = "true";
 
   outputHashMode = "recursive";
-  outputHash = "sha256-wuxDdXc3X9ZWsvRu8+BDagcwNOs0mZuTruV4Fn5vKIY=";
+  outputHash = "sha256-YvYfaqt5Pu94vr4riwZb/4X3WA6ugSDuxWS+dp6izWY=";
 }

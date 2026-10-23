@@ -17,12 +17,12 @@ in
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "discrawl";
-    rev = "dcca8a4c399ad6d33092566e031e7a95ad259956";
-    hash = "sha256-Lb1r7Ze8tbnBABPOWvIZT9Mu7mSL7kVuhngObYLvrHk=";
+    rev = "c56030d8b6bf6314d1814cf840b3247df21a8800";
+    hash = "sha256-mHYvdS5e9TLiJUbrIFsKzz8WcQiesxTWUApVcgZd5x4=";
   };
 
   subPackages = [ "cmd/discrawl" ];
-  vendorHash = "sha256-AiWEkdwkfaox3IGAq99hNDpxTZ3S6c/CGEbbdTnDX8I=";
+  vendorHash = "sha256-7fdmXYzM2DHeKsiUxJ8BCRxbY/LF/3Jp8lbtXO+EPzg=";
 
   # Upstream resolves the version from this linker var and falls back to
   # "devel"; without it `discrawl --version` prints "devel".
