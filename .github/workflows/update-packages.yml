@@ -106,7 +106,20 @@ jobs:
           git add -A
           if ! git diff --cached --quiet; then
             git commit -m "chore: update packages"
-            git push origin HEAD:main
+            pushed=0
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then
+                pushed=1
+                break
+              fi
+              echo "push rejected, rebasing on origin/main (attempt ${attempt})"
+              git fetch origin main
+              git rebase origin/main
+            done
+            if [ "$pushed" -ne 1 ]; then
+              echo "failed to push after retries"
+              exit 1
+            fi
           else
             echo "no changes to commit"
           fi
