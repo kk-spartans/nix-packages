@@ -11,6 +11,13 @@ pkgs.rustPlatform.buildRustPackage rec {
   buildAndTestSubdir = "cli";
   cargoRoot = "cli";
 
+  # Trust the system CA store for wss:// CDP endpoints. Upstream dials the
+  # DevTools WebSocket with the compiled-in Mozilla roots only, so a private
+  # CA (e.g. the spartans gateway) is rejected with UnknownIssuer. This is
+  # what lets agent-browser drive a remote Chrome through https://... with
+  # plain TLS and no port forwarding.
+  patches = [ ./agent-browser-system-ca.patch ];
+
   doCheck = false;
 
   cargoHash = "sha256-FprEr8LMwr/QLXNSUCi0xSDTGLWknPYlFwkBIT4tUdg=";

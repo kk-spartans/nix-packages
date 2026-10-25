@@ -1,0 +1,30 @@
+--- a/cli/src/native/cdp/client.rs
++++ b/cli/src/native/cdp/client.rs
+@@ -230,7 +230,26 @@
+             ..Default::default()
+         };
+ 
+-        Self::connect_request(request, ws_config, None).await
++        // Verify wss:// CDP endpoints against the system trust store so a
++        // private CA (e.g. a local gateway) is trusted without disabling TLS.
++        // The default connector only knows the compiled-in Mozilla roots.
++        let connector = if normalized_url.starts_with("wss://") {
++            match crate::tls::build_root_store(&crate::tls::TrustOptions {
++                use_system_ca: true,
++                ..Default::default()
++            }) {
++                Ok(roots) => Some(Connector::Rustls(Arc::new(
++                    rustls::ClientConfig::builder()
++                        .with_root_certificates(roots)
++                        .with_no_client_auth(),
++                ))),
++                Err(_) => None,
++            }
++        } else {
++            None
++        };
++
++        Self::connect_request(request, ws_config, connector).await
+     }
+ 
+     async fn connect_request(
