@@ -6,8 +6,8 @@
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "wacli";
-    rev = "e78aee908bc291aaee2212cdfde82235df1cd74f";
-    hash = "sha256-Ys/Cc8AU30iDjbia5IjWQUdEvNnOFsneJXypaWscbJ8=";
+    rev = "00fe5ef6601b427fd800074a526960c9379cc1c0";
+    hash = "sha256-vxLM8Fz8pURqg18rLqtgWJHQu2USP8qJNsMwxPepLG4=";
   };
 
   subPackages = [ "cmd/wacli" ];
