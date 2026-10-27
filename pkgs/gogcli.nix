@@ -6,12 +6,12 @@ pkgs.buildGoModule rec {
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "gogcli";
-    rev = "b8298ae6fd5335ddebc4bc8594e3b09aa3020ab4";
-    hash = "sha256-MaJNb5s6D+prVu8OH9jPylW6bhC9ausZxpuGypQparU=";
+    rev = "82e7fd6005d4ed29f8edfa2a44475e08fe3051a0";
+    hash = "sha256-D7c24Cc+/RVlhHVV7fM6BDYb/rK9/4PYjPlKLStNacs=";
   };
 
   subPackages = [ "cmd/gog" ];
-  vendorHash = "sha256-YPNJB9PUesnwEPUQt5RO1dmJzBoU+MQQMUEtSd06/vY=";
+  vendorHash = "sha256-DESZMHxLfhPPjHruEXd2glJWjAlUR2rHEfyyV+N1q/A=";
 
   nativeBuildInputs = [ pkgs.installShellFiles ];
 
