@@ -1,6 +1,6 @@
 { pkgs }:
 let
-  version = "0.15.1";
+  version = "0.15.2";
   target = if pkgs.stdenv.hostPlatform.isAarch64 then "linux-arm64" else "linux-x64";
 in
 pkgs.stdenv.mkDerivation {
@@ -15,7 +15,7 @@ pkgs.stdenv.mkDerivation {
     else
       pkgs.fetchurl {
         url = "https://github.com/zenbu-labs/terminal-browser/releases/download/v${version}/terminal-browser-linux-x64.tar.gz";
-        hash = "sha256-E4v3HD1vEVAl6GYbfuLQNs98kuyy9xXgtMMWU5vKp+s=";
+        hash = "sha256-loGpTbes4QbM6GvxTcs/y6ekBOXmYOcL+c63Ks42sUY=";
       };
 
   sourceRoot = "terminal-browser";
