@@ -6,14 +6,14 @@
 }:
 stdenv.mkDerivation rec {
   pname = "t3-unwrapped";
-  version = "0.1.7-nightly.20261103.4119";
+  version = "0.1.7-nightly.20261103.4138";
 
   # Upstream publishes the self-contained CLI as a release archive. The npm
   # packages are just launchers (0.1.x even downloads this archive at runtime),
   # so the archive is the real artifact.
   src = fetchurl {
     url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/t3-${version}-linux-x64.tar.gz";
-    hash = "sha256-zGTlc9JdvsSCvVhNV0VCTr3l3pDqJ1wjsh++8ZYLStc=";
+    hash = "sha256-FD0z2aX6UNYlRflVvmDXVYewk7RnyCN9KAOvONpJhyw=";
   };
 
   sourceRoot = "t3-${version}-linux-x64";
