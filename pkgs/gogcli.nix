@@ -1,17 +1,17 @@
 { pkgs }:
 pkgs.buildGoModule rec {
   pname = "gogcli";
-  version = "0.47.1-unstable-2026-11-04";
+  version = "0.47.1-unstable-2026-11-05";
 
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "gogcli";
-    rev = "dc6bf1f3bba83da3e90b2c67a28fd8422021d5b1";
-    hash = "sha256-Ly+4tYjFN7PpqnNn/fAeAbc+R/8j75jNuoKcirof6Kc=";
+    rev = "efa67af399269df81defffa3be8642714281fc84";
+    hash = "sha256-iIz6DqeeWBMMfa3QfJa+Wtm8c7ZvtXaPfD2YIp0iLk0=";
   };
 
   subPackages = [ "cmd/gog" ];
-  vendorHash = "sha256-DESZMHxLfhPPjHruEXd2glJWjAlUR2rHEfyyV+N1q/A=";
+  vendorHash = "sha256-4hP6LV8A3P5G+37gAmFI8dREWauXuLMFjeFjkjon4ms=";
 
   nativeBuildInputs = [ pkgs.installShellFiles ];
 
