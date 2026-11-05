@@ -36,5 +36,5 @@ pkgs.stdenv.mkDerivation {
   installPhase = "true";
 
   outputHashMode = "recursive";
-  outputHash = "sha256-uenDIppN2Am/1C4IEXOADN070huMLhcmNnjw8VOZxWA=";
+  outputHash = "sha256-AFYoaLlHEAdnuN5jM6PPIhK7pOUHqd5MGIvgkHLMEJw=";
 }
