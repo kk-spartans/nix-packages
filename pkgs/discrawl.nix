@@ -17,8 +17,8 @@ in
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "discrawl";
-    rev = "42cac96c80f7832dac0514f8209bab7fa19ec5e3";
-    hash = "sha256-sKcnM0Qk0gwy8BNVmw8ihXhZ8Xyk8BKtd0aiVwIitiw=";
+    rev = "f93da5003e30450044983f190bfc638989f3c7f3";
+    hash = "sha256-QxHXuShWmxfhgwsahHf0ZD410XKsAph4x5gNm+7k3xE=";
   };
 
   subPackages = [ "cmd/discrawl" ];
