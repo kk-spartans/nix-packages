@@ -12,17 +12,17 @@ let
 in
 (pkgs.buildGoModule.override { inherit go; }) rec {
   pname = "discrawl";
-  version = "0.19.0-unstable-2026-11-05";
+  version = "0.20.0-unstable-2026-11-06";
 
   src = pkgs.fetchFromGitHub {
     owner = "openclaw";
     repo = "discrawl";
-    rev = "16a7d41b2fb03dedcad9b6a515a722c091bdc3d1";
-    hash = "sha256-rdEL4izBIezwXufviUUBiPCDRNpIvTjh4MU6hKHz8U0=";
+    rev = "42cac96c80f7832dac0514f8209bab7fa19ec5e3";
+    hash = "sha256-sKcnM0Qk0gwy8BNVmw8ihXhZ8Xyk8BKtd0aiVwIitiw=";
   };
 
   subPackages = [ "cmd/discrawl" ];
-  vendorHash = "sha256-5XCj42splxtFhSXGnbkn/G2i1pwwJ1Vzd0gybiG91pA=";
+  vendorHash = "sha256-mbcdWmJxXu2ALEgimRmqdYLYiYqUcweFicVDRR5wnf4=";
 
   # Upstream resolves the version from this linker var and falls back to
   # "devel"; without it `discrawl --version` prints "devel".
