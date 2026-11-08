@@ -1,6 +1,6 @@
 { pkgs }:
 let
-  version = "17.13.0";
+  version = "17.14.0";
 in
 pkgs.stdenv.mkDerivation {
   pname = "ocrmypdf-deps";
@@ -39,5 +39,5 @@ pkgs.stdenv.mkDerivation {
   installPhase = "true";
 
   outputHashMode = "recursive";
-  outputHash = "sha256-tK5RVFyqM3ZKoydImREHkFYvvJz9gr6uYuEADMjFMts=";
+  outputHash = "sha256-MvtoQvHY6Mgq9VCH6S/cywBxuVMdNOmv5FrJp8J1Xs8=";
 }
