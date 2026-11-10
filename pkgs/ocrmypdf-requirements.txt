@@ -1017,9 +1017,9 @@ nvidia-nvtx==13.0.85 \
     --hash=sha256:cb7780edb6b14107373c835bf8b72e7a178bac7367e23da7acb108f973f157a6 \
     --hash=sha256:d66ea44254dd3c6eacc300047af6e1288d2269dd072b417e0adffbf479e18519
     # via cuda-toolkit
-ocrmypdf==17.14.0 \
-    --hash=sha256:834c51d1f91110e5e7b9ab83818c445a3336343d7f61acdf38db88272b0016ab \
-    --hash=sha256:bd56d59a3a4c78619330744c7bb69c1e28d63307a10281068d83bf85f2c327e1
+ocrmypdf==17.14.1 \
+    --hash=sha256:77412e62f621f1d1dbf4a333b4ef76c7f70977b1cb2d1d1f2d8d1e85939c0bf7 \
+    --hash=sha256:f3914926608e408d6a3cb4d7cb8d2a1f6e3ed21e3e817c0fd39ebd90aa593967
     # via
     #   -r pkgs/ocrmypdf.in
     #   ocrmypdf-easyocr
