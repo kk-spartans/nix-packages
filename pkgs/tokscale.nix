@@ -1,14 +1,14 @@
 { pkgs }:
 pkgs.rustPlatform.buildRustPackage rec {
   pname = "tokscale";
-  version = "4.21.0";
+  version = "4.22.0";
 
   src = pkgs.fetchurl {
     url = "https://github.com/junhoyeo/tokscale/archive/v${version}.tar.gz";
-    hash = "sha256-eAHi7tYdCWCWAcEuB1LdcAJhU0wWub2t10sOc/937Z4=";
+    hash = "sha256-0igZaL9c9o05Q3bLmooyDXIAHiRI97UhafaSMkOLrag=";
   };
 
-  cargoHash = "sha256-jK8SbBFjCTyApzxbqh610Pld8hjJgNsVCg0y2A6wqS4=";
+  cargoHash = "sha256-8Msr80AVLkAYZZpVQPqb98JnoIR1EAiok/rMZ9KiCQE=";
 
   doCheck = false;
 
