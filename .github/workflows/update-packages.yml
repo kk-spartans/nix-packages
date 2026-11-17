@@ -27,11 +27,11 @@ jobs:
 
       - name: Update packages
         run: |
-          set -uo pipefail
+          set -euo pipefail
 
           nix-update() {
             echo "\$ nix run nixpkgs#nix-update -- $*"
-            nix run nixpkgs#nix-update -- "$@" 2>&1 || echo "!! failed: $*"
+            nix run nixpkgs#nix-update -- "$@"
           }
 
           latest_npm() { curl -fsSL "https://registry.npmjs.org/$1/latest" | jq -r .version; }
