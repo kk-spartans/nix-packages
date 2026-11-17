@@ -83,8 +83,24 @@ jobs:
           done
 
           # PyPI: hf pins hf + huggingface-hub to the same version.
+          # Regenerate the hashed lock first so the FOD stays reproducible.
           v=$(latest_pypi hf)
-          [ -n "$v" ] && [ "$v" != "null" ] && nix-update --flake hf-deps --version "$v" --build
+          if [ -n "$v" ] && [ "$v" != "null" ]; then
+            cat > pkgs/hf.in <<EOF
+hf==${v}
+huggingface-hub==${v}
+hf-transfer==0.1.9
+hf-xet==1.7.0
+EOF
+            nix run nixpkgs#uv -- pip compile \
+              --python-version 3.12 \
+              --python-platform x86_64-unknown-linux-gnu \
+              --only-binary :all: \
+              --generate-hashes \
+              -o pkgs/hf-requirements.txt \
+              pkgs/hf.in
+            nix-update --flake hf-deps --version "$v" --build
+          fi
 
           # ocrmypdf: regenerate the hashed lock first, then let nix-update move
           # the version and the FOD hash.
