@@ -57,6 +57,14 @@ jobs:
             nix-update --flake t3-nightly-unwrapped --version "$nightly" --build
           fi
 
+          # Pluely publishes Linux debs under app-vX.Y.Z tags.
+          pluely=$(curl -fsSL "https://api.github.com/repos/iamsrikanthnani/pluely/releases?per_page=20" \
+            | jq -r '[.[] | select(.tag_name | test("^app-v[0-9]+\\.[0-9]+\\.[0-9]+$"))][0].tag_name' \
+            | sed 's/^app-v//')
+          if [ -n "$pluely" ] && [ "$pluely" != "null" ]; then
+            nix-update --flake pluely --version "$pluely" --build
+          fi
+
           # Per-arch binary release: pick the newest plain vX.Y.Z tag.
           tb=$(curl -fsSL "https://api.github.com/repos/zenbu-labs/terminal-browser/releases?per_page=40" \
             | jq -r '[.[] | select(.tag_name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))][0].tag_name' \

@@ -45,6 +45,7 @@
           }
           // prev.lib.optionalAttrs (prev.stdenv.hostPlatform.isLinux && prev.stdenv.hostPlatform.isx86_64) {
             t1code = import ./pkgs/t1code.nix { pkgs = final; };
+            pluely = import ./pkgs/pluely.nix { pkgs = final; };
           };
       };
 
@@ -99,6 +100,7 @@
         // pkgs.lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.hostPlatform.isx86_64) {
           inherit (pkgs) t1code;
           t1code-deps = pkgs.callPackage ./pkgs/t1code-deps.nix { };
+          inherit (pkgs) pluely;
         }
       );
     };

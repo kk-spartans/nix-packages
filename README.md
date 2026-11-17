@@ -7,7 +7,7 @@ Packages I made when there is no official nixpkgs package, or it's really outdat
 `.github/workflows/update-packages.yml` runs every 6 hours: it bumps the nixpkgs input, updates **every** package, commits directly to `main`, and pushes.
 
 - GitHub-backed Go packages (`spogo`, `wacli`, `gogcli`, `discrawl`) follow the default branch head (`--version branch`), not release tags.
-- GitHub tag/release tarballs (`tokscale`, `agent-browser`, `aw-watcher-lastfm`, `terminal-browser`, `t3-unwrapped`, `t3-nightly-unwrapped`) are bumped from their GitHub releases; `terminal-browser` refreshes both arch hashes.
+- GitHub tag/release tarballs (`tokscale`, `agent-browser`, `aw-watcher-lastfm`, `terminal-browser`, `t3-unwrapped`, `t3-nightly-unwrapped`) are bumped from their GitHub releases; `terminal-browser` refreshes both arch hashes. `pluely` follows the `app-v*` tags of its upstream deb.
 - npm tarballs (`fkill`, `portless`, `t1code`) and PyPI packages (`hf`, `ocrmypdf`) publish their version + hashes through a `*-deps` fixed-output derivation, which is what `nix-update` targets. `ocrmypdf` regenerates its hashed `pkgs/ocrmypdf-requirements.txt` lock from `pkgs/ocrmypdf.in` first.
 
 The `*-deps` attributes exist only so the updater has a normal derivation to evaluate; the user-facing packages are the launchers next to them.
