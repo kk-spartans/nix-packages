@@ -49,7 +49,10 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
     done
 
     install -Dm644 usr/share/applications/Pluely.desktop \
-      $out/share/applications/pluely.desktop
+      $out/share/applications/com.srikanthnani.pluely.desktop
+
+    substituteInPlace $out/share/applications/com.srikanthnani.pluely.desktop \
+      --replace-fail "StartupWMClass=pluely" "StartupWMClass=com.srikanthnani.pluely"
 
     runHook postInstall
   '';
