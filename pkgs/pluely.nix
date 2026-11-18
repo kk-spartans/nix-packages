@@ -57,6 +57,14 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  preFixup = ''
+    gappsWrapperArgs+=(
+      # WebKitGTK can hit Wayland protocol errors (e.g. Error 71) on some
+      # compositors/drivers with DMA-BUF rendering.
+      --set WEBKIT_DISABLE_DMABUF_RENDERER 1
+    )
+  '';
+
   meta = {
     description = "Open source alternative to Cluely, a privacy-first real-time AI assistant";
     homepage = "https://github.com/iamsrikanthnani/pluely";
