@@ -13,7 +13,6 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
     pkgs.dpkg
     pkgs.autoPatchelfHook
     pkgs.wrapGAppsHook3
-    pkgs.makeWrapper
   ];
 
   # The deb is a bare Tauri binary; everything it links against is a normal
@@ -50,45 +49,9 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
     done
 
     install -Dm644 usr/share/applications/Pluely.desktop \
-      $out/share/applications/com.srikanthnani.pluely.desktop
-
-    substituteInPlace $out/share/applications/com.srikanthnani.pluely.desktop \
-      --replace-fail "StartupWMClass=pluely" "StartupWMClass=com.srikanthnani.pluely" \
-      --replace-fail "Exec=pluely" "Exec=$out/bin/pluely"
-
-    # Some runtimes/portals resolve the app id from the desktop file name or
-    # window class as "pluely"; provide matching entries for discovery.
-    for desktop in pluely.desktop Pluely.desktop; do
-      install -Dm644 $out/share/applications/com.srikanthnani.pluely.desktop \
-        $out/share/applications/$desktop
-    done
+      $out/share/applications/pluely.desktop
 
     runHook postInstall
-  '';
-
-  preFixup = ''
-    gappsWrapperArgs+=(
-      # WebKitGTK can hit Wayland protocol errors (e.g. Error 71) on some
-      # compositors/drivers with DMA-BUF rendering.
-      --set WEBKIT_DISABLE_DMABUF_RENDERER 1
-    )
-  '';
-
-  postFixup = ''
-    # xdg-desktop-portal identifies host apps from the app scope name
-    # (app-<app-id>-*.scope), which lets GlobalShortcuts carry the app id.
-    # Fall back to direct launch if systemd-run is unavailable/fails.
-    mv $out/bin/pluely $out/bin/.pluely-wrapped
-    cat > $out/bin/pluely <<EOF
-#!${pkgs.runtimeShell}
-if [ -n "\$XDG_RUNTIME_DIR" ] && command -v ${pkgs.systemd}/bin/systemd-run >/dev/null 2>&1; then
-  exec ${pkgs.systemd}/bin/systemd-run --user --scope --slice=app.slice \
-    --unit="app-com.srikanthnani.pluely-\$\$-\$RANDOM" -- \
-    $out/bin/.pluely-wrapped "\$@"
-fi
-exec $out/bin/.pluely-wrapped "\$@"
-EOF
-    chmod +x $out/bin/pluely
   '';
 
   meta = {
