@@ -53,7 +53,8 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
       $out/share/applications/com.srikanthnani.pluely.desktop
 
     substituteInPlace $out/share/applications/com.srikanthnani.pluely.desktop \
-      --replace-fail "StartupWMClass=pluely" "StartupWMClass=com.srikanthnani.pluely"
+      --replace-fail "StartupWMClass=pluely" "StartupWMClass=com.srikanthnani.pluely" \
+      --replace-fail "Exec=pluely" "Exec=$out/bin/pluely"
 
     # Some runtimes/portals resolve the app id from the desktop file name or
     # window class as "pluely"; provide matching entries for discovery.
