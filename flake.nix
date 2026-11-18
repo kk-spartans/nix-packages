@@ -58,6 +58,7 @@
         gogcli = import ./modules/home-manager/gogcli.nix;
         t3 = import ./modules/home-manager/t3.nix;
         hf = import ./modules/home-manager/hf.nix;
+        pluely = import ./modules/home-manager/pluely.nix;
       };
 
       packages = forAllSystems (
