@@ -54,6 +54,13 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/share/applications/com.srikanthnani.pluely.desktop \
       --replace-fail "StartupWMClass=pluely" "StartupWMClass=com.srikanthnani.pluely"
 
+    # Some runtimes/portals resolve the app id from the desktop file name or
+    # window class as "pluely"; provide matching entries for discovery.
+    for desktop in pluely.desktop Pluely.desktop; do
+      install -Dm644 $out/share/applications/com.srikanthnani.pluely.desktop \
+        $out/share/applications/$desktop
+    done
+
     runHook postInstall
   '';
 
