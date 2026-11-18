@@ -73,20 +73,10 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  postFixup = ''
-    # xdg-desktop-portal identifies host apps from the app scope name
-    # (app-<app-id>-*.scope). Running in such a scope lets GlobalShortcuts
-    # requests carry com.srikanthnani.pluely as the app id on Wayland.
-    mv $out/bin/pluely $out/bin/.pluely-wrapped
-    makeWrapper ${pkgs.systemd}/bin/systemd-run $out/bin/pluely \
-      --add-flags "--user" \
-      --add-flags "--scope" \
-      --add-flags "--quiet" \
-      --add-flags "--collect" \
-      --add-flags "--unit=app-com.srikanthnani.pluely-\$\$" \
-      --add-flags "--" \
-      --add-flags "$out/bin/.pluely-wrapped"
-  '';
+  # Keep the gapps-wrapped binary as the entrypoint. Launching through an
+  # app systemd scope can help portal app-id detection, but replacing the
+  # main executable broke startup in practice; shortcuts are handled via
+  # Hyprland/desktop integration instead.
 
   meta = {
     description = "Open source alternative to Cluely, a privacy-first real-time AI assistant";
