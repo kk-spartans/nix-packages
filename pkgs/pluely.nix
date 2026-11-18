@@ -73,10 +73,22 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  # Keep the gapps-wrapped binary as the entrypoint. Launching through an
-  # app systemd scope can help portal app-id detection, but replacing the
-  # main executable broke startup in practice; shortcuts are handled via
-  # Hyprland/desktop integration instead.
+  postFixup = ''
+    # xdg-desktop-portal identifies host apps from the app scope name
+    # (app-<app-id>-*.scope), which lets GlobalShortcuts carry the app id.
+    # Fall back to direct launch if systemd-run is unavailable/fails.
+    mv $out/bin/pluely $out/bin/.pluely-wrapped
+    cat > $out/bin/pluely <<EOF
+#!${pkgs.runtimeShell}
+if [ -n "\$XDG_RUNTIME_DIR" ] && command -v ${pkgs.systemd}/bin/systemd-run >/dev/null 2>&1; then
+  exec ${pkgs.systemd}/bin/systemd-run --user --scope --slice=app.slice \
+    --unit="app-com.srikanthnani.pluely-\$\$-\$RANDOM" -- \
+    $out/bin/.pluely-wrapped "\$@"
+fi
+exec $out/bin/.pluely-wrapped "\$@"
+EOF
+    chmod +x $out/bin/pluely
+  '';
 
   meta = {
     description = "Open source alternative to Cluely, a privacy-first real-time AI assistant";
