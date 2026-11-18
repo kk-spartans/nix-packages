@@ -13,6 +13,7 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
     pkgs.dpkg
     pkgs.autoPatchelfHook
     pkgs.wrapGAppsHook3
+    pkgs.makeWrapper
   ];
 
   # The deb is a bare Tauri binary; everything it links against is a normal
@@ -70,6 +71,21 @@ pkgs.stdenv.mkDerivation (finalAttrs: {
       # compositors/drivers with DMA-BUF rendering.
       --set WEBKIT_DISABLE_DMABUF_RENDERER 1
     )
+  '';
+
+  postFixup = ''
+    # xdg-desktop-portal identifies host apps from the app scope name
+    # (app-<app-id>-*.scope). Running in such a scope lets GlobalShortcuts
+    # requests carry com.srikanthnani.pluely as the app id on Wayland.
+    mv $out/bin/pluely $out/bin/.pluely-wrapped
+    makeWrapper ${pkgs.systemd}/bin/systemd-run $out/bin/pluely \
+      --add-flags "--user" \
+      --add-flags "--scope" \
+      --add-flags "--quiet" \
+      --add-flags "--collect" \
+      --add-flags "--unit=app-com.srikanthnani.pluely-\$\$" \
+      --add-flags "--" \
+      --add-flags "$out/bin/.pluely-wrapped"
   '';
 
   meta = {
